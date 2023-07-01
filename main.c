@@ -22,7 +22,6 @@ void main(void)
     {
         switch (Mode)
         {
-
         case Target:
 
             if (oldMode != Target)
@@ -142,12 +141,3 @@ __interrupt void Port2_ISR(void)
     }
 }
 
-/*
-
-int main(void) {
-
-    WDT_A_hold(WDT_A_BASE);
-
-    return (0);
-}
-*/
