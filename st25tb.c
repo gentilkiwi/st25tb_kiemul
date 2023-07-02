@@ -1,38 +1,67 @@
 #include "st25tb.h"
 
-static tSt25TbState g_eCurrentTargetState;
-
 const uint8_t ui8ChipId = 0x42;
-const uint64_t MyRefStUID = 0xd0023375a24dfe07; //  UID: 07 fe 4d a2 75 33 02 d0
-uint8_t MyRefSt[16 + 1][4] = {
-        { 0x30, 0x00, 0x00, 0x00 }, // 0x00         [0x00] 30 00 00 00
-        { 0x24, 0x78, 0x00, 0x25 }, // 0x01         [0x01] 24 78 00 25
-        { 0x8a, 0x22, 0x03, 0x10 }, // 0x02         [0x02] 8a 22 03 10
-        { 0x00, 0x00, 0x00, 0x00 }, // 0x03         [0x03] 00 00 00 00
-        { 0x00, 0x00, 0x00, 0x00 }, // 0x04         [0x04] 00 00 00 00
-        { 0x01, 0x00, 0x00, 0x04 }, // 0x05         [0x05] 01 00 00 04
-        { 0xfe, 0xff, 0xff, 0xff }, // 0x06         [0x06] fe ff ff ff
-        { 0x00, 0x00, 0x00, 0x00 }, // 0x07         [0x07] 00 00 00 00
-        { 0x00, 0x00, 0x00, 0x00 }, // 0x08         [0x08] 00 00 00 00
-        { 0xda, 0x2d, 0x00, 0x00 }, // 0x09         [0x09] da 2d 00 00
-        { 0x00, 0x00, 0x00, 0x00 }, // 0x0a         [0x0a] 00 00 00 00
-        { 0x00, 0x00, 0x00, 0x00 }, // 0x0b         [0x0b] 00 00 00 00
-        { 0x00, 0x00, 0x00, 0x00 }, // 0x0c         [0x0c] 00 00 00 00
-        { 0x00, 0x00, 0x00, 0x00 }, // 0x0d         [0x0d] 00 00 00 00
-        { 0x00, 0x00, 0x00, 0x00 }, // 0x0e         [0x0e] 00 00 00 00
-        { 0xd0, 0x5d, 0x0e, 0x46 }, // 0x0f         [0x0f] d0 5d 0e 46
-        { 0xff, 0xff, 0xff, 0xff }, // 0xff (0x10)  [0xff] ff ff ff ff
+const uint8_t ST25TB_KIWI_SPECIAL_RETCODE_OK[] = {0xca, 0xfe, 0xba, 0xbe}, ST25TB_KIWI_SPECIAL_RETCODE_KO[] = {0xde, 0xca, 0xfb, 0xad};
+__attribute__ ((aligned (512), section(".stcard"))) const uint8_t MyRefSt_Flash[0x10 + 1 + 2][4] =
+{
+    { 0x00, 0x00, 0x00, 0x00 }, // 0x00
+    { 0x00, 0x00, 0x00, 0x00 }, // 0x01
+    { 0x00, 0x00, 0x00, 0x00 }, // 0x02
+    { 0x00, 0x00, 0x00, 0x00 }, // 0x03
+    { 0x00, 0x00, 0x00, 0x00 }, // 0x04
+    { 0xff, 0xff, 0xff, 0xff }, // 0x05
+    { 0xff, 0xff, 0xff, 0xff }, // 0x06
+    { 0x00, 0x00, 0x00, 0x00 }, // 0x07
+    { 0x00, 0x00, 0x00, 0x00 }, // 0x08
+    { 0x00, 0x00, 0x00, 0x00 }, // 0x09
+    { 0x00, 0x00, 0x00, 0x00 }, // 0x0a
+    { 0x00, 0x00, 0x00, 0x00 }, // 0x0b
+    { 0x00, 0x00, 0x00, 0x00 }, // 0x0c
+    { 0x00, 0x00, 0x00, 0x00 }, // 0x0d
+    { 0x00, 0x00, 0x00, 0x00 }, // 0x0e
+    { 0x00, 0x00, 0x00, 0x00 }, // 0x0f
+    // ...
+                                // 0x60 is for Flash backup
+    // ...
+    { 0xee, 0xdd, 0xcc, 0xbb }, // 0x7e (0x10)
+    { 0xaa, 0x33, 0x02, 0xd0 }, // 0x7f (0x11)
+    // ...
+    { 0xff, 0xff, 0xff, 0xff }, // 0xff (0x12)
 };
-uint8_t MySt[16 + 1][4];
+
+static tSt25TbState g_eCurrentTargetState;
+uint8_t MyRefSt[0x10 + 1 + 2][4];
+uint8_t MySt[0x10][4]; // no SYSTEM needed, nor UID checked before
 
 void ST25TB_Target_Init()
+{
+    memcpy(MyRefSt, MyRefSt_Flash, sizeof(MyRefSt));
+    g_eCurrentTargetState = PowerOff;
+}
+
+void ST25TB_Target_ResetState()
 {
     g_eCurrentTargetState = PowerOff;
 }
 
+uint8_t ST25TB_Target_AdjustIdxForSpecialAddr(uint8_t original)
+{
+    switch(original)
+    {
+    case 0x7e:
+        return 0x10;
+    case 0x7f:
+        return 0x11;
+    case 0xff:
+        return 0x12;
+    default:
+        return original;
+    }
+}
+
 tSt25TbState ST25TB_Target_StateMachine(uint8_t *pui8Payload, uint8_t ui8Length)
 {
-    uint8_t cbData = 0;
+    uint8_t cbData = 0, idx;
     const uint8_t *pcbData = NULL;
 
     switch (g_eCurrentTargetState)
@@ -91,22 +120,37 @@ tSt25TbState ST25TB_Target_StateMachine(uint8_t *pui8Payload, uint8_t ui8Length)
             }
             else if (pui8Payload[0] == ST25TB_GET_UID)
             {
-                pcbData = (const uint8_t *) &MyRefStUID; //MyRefSt[0x11]; //ui8UID;
-                cbData = sizeof(MyRefStUID);//2 * sizeof(MyRefSt[0]); //sizeof(ui8UID);
+                pcbData = MyRefSt[0x10];
+                cbData = 2 * sizeof(MyRefSt[0]);
             }
         }
         else if (ui8Length == 2)
         {
             if (pui8Payload[0] == ST25TB_READ_BLOCK)
             {
-                pcbData = MyRefSt[min(pui8Payload[1], 0x10)];
-                cbData = sizeof(MyRefSt[0]);
+                idx = ST25TB_Target_AdjustIdxForSpecialAddr(pui8Payload[1]);
+                if(idx < 0x13)
+                {
+                    pcbData = MyRefSt[idx];
+                    cbData = sizeof(MyRefSt[0]);
+                }
             }
         }
         else if ((ui8Length == 6) && (pui8Payload[0] == ST25TB_WRITE_BLOCK))
         {
-            memcpy(MyRefSt[min(pui8Payload[1], 0x10)], &pui8Payload[2],
-                   sizeof(MyRefSt[0]));
+            idx = ST25TB_Target_AdjustIdxForSpecialAddr(pui8Payload[1]);
+            if(idx < 0x13)
+            {
+                memcpy(MyRefSt[idx], &pui8Payload[2], sizeof(MyRefSt[0]));
+            }
+            else if(idx == 0x60)
+            {
+                FlashCtl_eraseSegment((uint8_t *) MyRefSt_Flash);
+                FlashCtl_write32((uint32_t *) MyRefSt, (uint32_t *) MyRefSt_Flash, sizeof(MyRefSt_Flash) / sizeof(MyRefSt_Flash[0]));
+
+                pcbData = ST25TB_KIWI_SPECIAL_RETCODE_OK;
+                cbData = sizeof(ST25TB_KIWI_SPECIAL_RETCODE_OK);
+            }
         }
 
         break;
@@ -259,7 +303,7 @@ bool ST25TB_Initiator_Compare_UID_with_Ref(bool *pbIsEqual)
 #if defined(ST25TB_TEST_CARD)
                 *pbIsEqual = true;
 #else
-                *pbIsEqual = (ui64UID == MyRefStUID);// *(uint64_t *) (MyRefSt + 0x11));
+                *pbIsEqual = (ui64UID == *(const uint64_t *) (MyRefSt + 0x10));
 #endif
             }
 
@@ -273,7 +317,7 @@ bool ST25TB_Initiator_Compare_UID_with_Ref(bool *pbIsEqual)
     return bStatus;
 }
 
-bool ST25TB_Initiator_Write_Then_Compare()
+bool ST25TB_Initiator_Write_Then_Compare() // ignore SYSTEM area (to write, to compare)
 {
     uint8_t i;
 
@@ -287,7 +331,6 @@ bool ST25TB_Initiator_Write_Then_Compare()
 #endif
         ST25TB_Initiator_Write_Block(i, MyRefSt[i]);
     }
-    ST25TB_Initiator_Write_Block(0xff, MyRefSt[0x10]);
 
     memset(MySt, 0x00, sizeof(MySt));
     for(i = 0; i < 0x10; i++)
@@ -300,9 +343,7 @@ bool ST25TB_Initiator_Write_Then_Compare()
         }
 #endif
         ST25TB_Initiator_Read_Block(i, MySt[i]);
-
     }
-    ST25TB_Initiator_Read_Block(0xff, MySt[0x10]);
 
-    return (memcmp(MySt, MyRefSt, min(sizeof(MySt), sizeof(MyRefSt))) == 0);
+    return (memcmp(MySt, MyRefSt, sizeof(MySt)) == 0); // MySt smaller
 }

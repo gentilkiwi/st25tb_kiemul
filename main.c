@@ -12,6 +12,7 @@ void main(void)
 
     MCU_init();
     LED_init();
+    ST25TB_Target_Init();
 
     GPIO_setAsInputPinWithPullUpResistor(GPIO_PORT_P1, GPIO_PIN1);
 
@@ -30,7 +31,7 @@ void main(void)
                 LED_ON(LED1);
             }
 
-            ST25TB_Target_Init();
+            ST25TB_Target_ResetState();
 
             TRF79x0_directCommand(TRF79X0_SOFT_INIT_CMD);
             TRF79x0_directCommand(TRF79X0_IDLE_CMD);
@@ -112,7 +113,10 @@ void main(void)
                     LED_ON(D3);
                 }
 
-                while (GPIO_getInputPinValue(GPIO_PORT_P1, GPIO_PIN1));
+                while (GPIO_getInputPinValue(GPIO_PORT_P1, GPIO_PIN1))
+                {
+                    MCU_delayMillisecond(25);
+                }
 
                 Mode = Target;
             }

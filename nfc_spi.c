@@ -77,7 +77,7 @@ void SPI_writeSingle(uint8_t data, uint8_t reg)
     volatile int8_t x;
 
     reg &= TRF79X0_ADDRESS_MASK;
-    reg |= TRF79X0_CONTROL_REG_WRITE; //
+    reg |= TRF79X0_CONTROL_REG_WRITE | TRF79X0_REG_MODE_SINGLE;
 
     SLAVE_SELECT_LOW
     SPI_SendByte(reg);

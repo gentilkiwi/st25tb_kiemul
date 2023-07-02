@@ -1,4 +1,5 @@
 #pragma once
+#include <flashctl.h>
 #include "trf79x0.h"
 
 //#define ST25TB_TEST_CARD
@@ -28,6 +29,7 @@ typedef enum _tSt25TbState {
 #define ST25TB_COMPLETION           0x0f
 
 extern void ST25TB_Target_Init();
+extern void ST25TB_Target_ResetState();
 extern tSt25TbState ST25TB_Target_StateMachine(uint8_t * pui8Payload, uint8_t ui8Length);
 
 extern bool ST25TB_Initiator_Initiate(uint8_t *pui8ChipId);
