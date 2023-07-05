@@ -272,7 +272,7 @@ bool ST25TB_Initiator_Write_Block(const uint8_t block, const uint8_t pui8Data[4]
 
     if(bStatus)
     {
-        MCU_delayMillisecond(5);
+        MCU_delayMillisecond(7); //
     }
 
     return bStatus;

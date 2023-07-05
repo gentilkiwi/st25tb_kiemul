@@ -1,4 +1,3 @@
-#include <driverlib.h>
 #include "led.h"
 #include "trf79x0.h"
 #include "st25tb.h"
