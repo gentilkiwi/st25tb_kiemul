@@ -21,17 +21,23 @@ __attribute__ ((aligned (512), section(".stcard"))) const uint8_t MyRefSt_Flash[
     { 0x00, 0x00, 0x00, 0x00 }, // 0x0e
     { 0x00, 0x00, 0x00, 0x00 }, // 0x0f
     // ...
-                                // 0x60 is for Flash backup
+    { 0xff, 0xff, 0xff, 0xff }, // 0xff (0x10)
     // ...
-    { 0xee, 0xdd, 0xcc, 0xbb }, // 0x7e (0x10)
-    { 0xaa, 0x33, 0x02, 0xd0 }, // 0x7f (0x11)
+    { 0xee, 0xdd, 0xcc, 0xbb }, // 0x7e (0x11)
+    { 0xaa, 0x33, 0x02, 0xd0 }, // 0x7f (0x12)
     // ...
-    { 0xff, 0xff, 0xff, 0xff }, // 0xff (0x12)
+
 };
 
 static tSt25TbState g_eCurrentTargetState;
 uint8_t MyRefSt[0x10 + 1 + 2][4];
-uint8_t MySt[0x10][4]; // no SYSTEM needed, nor UID checked before
+uint8_t MySt[0x10 + 1 + 2][4];
+
+void ST25TB_Write_Reference_to_Flash()
+{
+    FlashCtl_eraseSegment((uint8_t *) MyRefSt_Flash);
+    FlashCtl_write32((uint32_t *) MyRefSt, (uint32_t *) MyRefSt_Flash, sizeof(MyRefSt_Flash) / sizeof(MyRefSt_Flash[0]));
+}
 
 void ST25TB_Target_Init()
 {
@@ -48,11 +54,11 @@ uint8_t ST25TB_Target_AdjustIdxForSpecialAddr(uint8_t original)
 {
     switch(original)
     {
-    case 0x7e:
-        return 0x10;
-    case 0x7f:
-        return 0x11;
     case 0xff:
+        return 0x10;
+    case 0x7e:
+        return 0x11;
+    case 0x7f:
         return 0x12;
     default:
         return original;
@@ -120,7 +126,7 @@ tSt25TbState ST25TB_Target_StateMachine(uint8_t *pui8Payload, uint8_t ui8Length)
             }
             else if (pui8Payload[0] == ST25TB_GET_UID)
             {
-                pcbData = MyRefSt[0x10];
+                pcbData = MyRefSt[0x11];
                 cbData = 2 * sizeof(MyRefSt[0]);
             }
         }
@@ -145,9 +151,7 @@ tSt25TbState ST25TB_Target_StateMachine(uint8_t *pui8Payload, uint8_t ui8Length)
             }
             else if(idx == 0x60)
             {
-                FlashCtl_eraseSegment((uint8_t *) MyRefSt_Flash);
-                FlashCtl_write32((uint32_t *) MyRefSt, (uint32_t *) MyRefSt_Flash, sizeof(MyRefSt_Flash) / sizeof(MyRefSt_Flash[0]));
-
+                ST25TB_Write_Reference_to_Flash();
                 pcbData = ST25TB_KIWI_SPECIAL_RETCODE_OK;
                 cbData = sizeof(ST25TB_KIWI_SPECIAL_RETCODE_OK);
             }
@@ -258,6 +262,11 @@ bool ST25TB_Initiator_Read_Block(const uint8_t block, uint8_t pui8Data[4])
         }
     }
 
+    if(bStatus)
+    {
+        MCU_delayMillisecond(4); //
+    }
+
     return bStatus;
 }
 
@@ -303,7 +312,7 @@ bool ST25TB_Initiator_Compare_UID_with_Ref(bool *pbIsEqual)
 #if defined(ST25TB_TEST_CARD)
                 *pbIsEqual = true;
 #else
-                *pbIsEqual = (ui64UID == *(const uint64_t *) (MyRefSt + 0x10));
+                *pbIsEqual = (ui64UID == *(const uint64_t *) (MyRefSt + 0x11));
 #endif
             }
 
@@ -345,5 +354,48 @@ bool ST25TB_Initiator_Write_Then_Compare() // ignore SYSTEM area (to write, to c
         ST25TB_Initiator_Read_Block(i, MySt[i]);
     }
 
-    return (memcmp(MySt, MyRefSt, sizeof(MySt)) == 0); // MySt smaller
+    return (memcmp(MySt, MyRefSt, 0x10 * sizeof(MySt[0])) == 0);
+}
+
+
+bool ST25TB_Initiator_Read_Reference(bool *pbIsEqual)
+{
+    bool bStatus = false;
+    uint8_t ui8ChipId, i;
+
+    memset(MySt, 0x00, sizeof(MySt));
+    memset(MyRefSt, 0x00, sizeof(MyRefSt));
+
+    *pbIsEqual = false;
+
+    if(ST25TB_Initiator_Initiate(&ui8ChipId))
+    {
+        if(ST25TB_Initiator_Select(ui8ChipId))
+        {
+            bStatus = true;
+
+            if(ST25TB_Initiator_Get_Uid((uint64_t *) (MySt + 0x11)))
+            {
+                for(i = 0; i < 0x10; i++)
+                {
+                    ST25TB_Initiator_Read_Block(i, MySt[i]);
+                }
+                ST25TB_Initiator_Read_Block(0xff, MySt[0x10]);
+            }
+
+            if(ST25TB_Initiator_Get_Uid((uint64_t *) (MyRefSt + 0x11)))
+            {
+                for(i = 0; i < 0x10; i++)
+                {
+                    ST25TB_Initiator_Read_Block(i, MyRefSt[i]);
+                }
+                ST25TB_Initiator_Read_Block(0xff, MyRefSt[0x10]);
+            }
+
+            *pbIsEqual = (memcmp(MySt, MyRefSt, sizeof(MySt)) == 0);
+        }
+    }
+
+
+    return bStatus;
 }
