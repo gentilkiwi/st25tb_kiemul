@@ -1,63 +1,21 @@
 #pragma once
-#include <mcu.h>
-#include "nfc_spi.h"
+#include "bp-trf7970a.h"
 
-#define SPI_MODULE_BASE_ADDR    USCI_B0_BASE
-#define SPI_PORT                GPIO_PORT_P3
-#define SPI_CLK                 GPIO_PIN2
-#define SPI_MOSI                GPIO_PIN0
-#define SPI_MISO                GPIO_PIN1
-#define SPI_SS_PORT             GPIO_PORT_P4
-#define SPI_SS_POUT             P4OUT
-#define SPI_SS                  GPIO_PIN2
-#define TRF_EN_PORT             GPIO_PORT_P4
-#define TRF_EN                  GPIO_PIN1
+void TRF7970A_init();
 
-#define TRF_IRQ_PORT            GPIO_PORT_P2
-#define TRF_IRQ_PIN             P2IN
-#define TRF_IRQ                 GPIO_PIN2
+void TRF7970A_directCommand(uint8_t ui8Command);
+uint8_t TRF7970A_readSingle(uint8_t ui8Register);
+void TRF7970A_writeSingle(uint8_t ui8Value, uint8_t ui8Register);
+void TRF7970A_readCont(uint8_t *pui8Payload, uint8_t ui8Register, uint8_t ui8Length);
+void TRF7970A_writeCont(uint8_t *pui8Payload, uint8_t ui8Register, uint8_t ui8Length);
+void TRF7970A_writePacketToTransmit(const uint8_t *pui8Payload, uint8_t ui8Length);
+void TRF7970A_ignoreCmd();
+uint8_t TRF7970A_waitIrq();
 
+#define TRF7970A_getIrqStatus()   TRF7970A_readSingle(TRF79X0_IRQ_STATUS_REG)
+#define TRF7970A_clearIrqStatus()   TRF7970A_getIrqStatus()
 
-typedef enum _tTRF79x0_IRQFlag {
-    IRQ_STATUS_IDLE = 0x00,
-    IRQ_STATUS_COLLISION_ERROR = 0x01,
-    IRQ_STATUS_COLLISION_AVOID_FINISHED = 0x02,
-    IRQ_STATUS_RF_FIELD_CHANGE = 0x04,
-    IRQ_STATUS_SDD_COMPLETE = 0x08,
-    IRQ_STATUS_PROTOCOL_ERROR = 0x10,
-    IRQ_STATUS_FIFO_HIGH_OR_LOW  = 0x20,
-    IRQ_STATUS_RX_COMPLETE = 0x40,
-    IRQ_STATUS_TX_COMPLETE = 0x80,
-    IRQ_STATUS_OVERFLOW = 0xFC,
-    IRQ_STATUS_NO_RESPONSE = 0xFE,
-    IRQ_STATUS_TIME_OUT = 0xFF
-} tTRF79x0_IRQFlag;
-
-typedef enum _tTRF79x0_Mode {
-    Initiator,
-    Target,
-} tTRF79x0_Mode;
-
-extern volatile uint8_t g_ui8IrqFlag;
-extern volatile uint8_t g_bBitclockFlag;
-
-#define NFC_FIFO_SIZE       127//255
-
-extern uint8_t g_ui8FifoBuffer[NFC_FIFO_SIZE];
-extern uint8_t g_ui8cbFifoBuffer;
-
-
-extern void TRF79x0_init();
-extern void TRF79x0_directCommand(uint8_t ui8Command);
-extern void TRF79x0_writeSingle(uint8_t ui8Value, uint8_t ui8Register);
-extern void TRF79x0_writeCont(uint8_t * pui8Payload, uint8_t ui8Register, uint8_t ui8Length);
-extern void TRF79x0_readSingle(uint8_t * pui8Value, uint8_t ui8Register);
-extern void TRF79x0_readCont(uint8_t * pui8Payload, uint8_t ui8Register, uint8_t ui8Length);
-
-extern bool TRF79x0_Send(tTRF79x0_Mode Mode, const uint8_t *pui8Payload, const uint8_t ui8Length);
-extern bool TRF79x0_Initiator_Send_Recv(const uint8_t *pui8Payload, const uint8_t ui8Length, const uint16_t ui16TimeOut);
-extern void TRF79x0_ignoreCmd();
-extern tTRF79x0_IRQFlag TRF79x0_irqHandler(tTRF79x0_Mode Mode, uint16_t ui16TimeOut);
+//#define TRF79X0_SPI_FREQ    4000000
 
 //*****************************************************************************
 //
@@ -221,3 +179,16 @@ extern tTRF79x0_IRQFlag TRF79x0_irqHandler(tTRF79x0_Mode Mode, uint16_t ui16Time
 #define TRF79X0_NFC_TARGET_PROTOCOL_106KBPS             0x01
 #define TRF79X0_NFC_TARGET_PROTOCOL_212KBPS             0x02
 #define TRF79X0_NFC_TARGET_PROTOCOL_424KBPS             0x03
+
+// 6.15.3.3.10
+#define TRF79X0_NFC_TARGET_PROTOCOL_14B_COMMAND         (TRF79X0_NFC_TARGET_PROTOCOL_RF_WAKE_UP | TRF79X0_NFC_TARGET_PROTOCOL_RF_COLLISION_LEVEL | TRF79X0_NFC_TARGET_PROTOCOL_ISO14443B | TRF79X0_NFC_TARGET_PROTOCOL_106KBPS)
+
+
+#define TRF79X0_IRQ_STATUS_COL_ERR                      0x01 // The external RF field was present so the collision avoidance could not be carried out.
+#define TRF79X0_IRQ_STATUS_COL                          0x02 // The system has finished collision avoidance and the minimum wait time is elapsed.
+#define TRF79X0_IRQ_STATUS_RF                           0x04 // Sufficient RF signal level for operation was reached or lost
+#define TRF79X0_IRQ_STATUS_SDD                          0x08 // SDD (passive target at 106 kbps) successfully finished
+#define TRF79X0_IRQ_STATUS_ERR1                         0x10 // Any protocol error
+#define TRF79X0_IRQ_STATUS_FIFO                         0x20 // Signals FIFO high or low as set in the Adjustable FIFO IRQ Levels (0x14) register
+#define TRF79X0_IRQ_STATUS_SRX                          0x40 // Signals that RX SOF was received and RX is in progress. The flag is set at the start of RX but the interrupt request (IRQ = 1) is sent when RX is finished.
+#define TRF79X0_IRQ_STATUS_TX                           0x80 // Signals that TX is in progress. The flag is set at the start of TX but the interrupt request (IRQ = 1) is sent when TX is finished.

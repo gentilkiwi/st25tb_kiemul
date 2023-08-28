@@ -2,5 +2,5 @@
 .launches/
 .settings/
 targetConfigs/
-Release/
-Debug/
+Release*/
+Debug*/

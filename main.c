@@ -1,219 +1,242 @@
-#include "main.h"
+#include "boards/bp-trf7970a/trf7970a.h"
+#include "st25tb/st25tb_target.h"
+//#define ST25TB_DO_NOT_WRITE_DANGEROUS_SECTOR
+#include "st25tb/st25tb_initiator.h"
 
-void main(void)
+#define LED_ACTION_DELAY   15 // DO NOT TOUCH !
+
+bool MOD_Emulate_VirtualCard();
+bool MOD_Write_VirtualToCard();
+bool MOD_Read_CardToFlash();
+
+void LED_Startup();
+void LED_ChangeMode();
+
+typedef bool (* PMODE_FUNCTION) ();
+typedef struct _KIEMUL_MODE {
+    const PMODE_FUNCTION current;
+    const struct _KIEMUL_MODE *prev;
+    const struct _KIEMUL_MODE *next;
+    const bool bLedGreen;
+    const bool bLedRed;
+} KIEMUL_MODE, PKIEMUL_MODE;
+
+const KIEMUL_MODE Modes[] = {
+    /*index  Function                  Previous   Next       GreenL RedL */
+    /*[0]*/ {MOD_Emulate_VirtualCard,  &Modes[2], &Modes[1], true,  false},
+    /*[1]*/ {MOD_Write_VirtualToCard,  &Modes[0], &Modes[2], false, true },
+    /*[2]*/ {MOD_Read_CardToFlash,     &Modes[1], &Modes[0], true,  true },
+};
+
+void main()
 {
-    st25tb_kiemul_Mode Mode = Emulate_VirtualCard_Mode, oldMode = Write_RealCard_Mode;
+    const KIEMUL_MODE *pMode = &Modes[0];
 
-    MCU_init();
-    LED_init();
+    LP_init();
+    BP_init();
+
+    GPIO_enableInterrupt(LP_S1);
+    GPIO_enableInterrupt(LP_S2);
+
+    TRF7970A_init();
     ST25TB_Target_Init();
 
-    GPIO_setAsInputPinWithPullUpResistor(GPIO_PORT_P1, GPIO_PIN1);
-
-    __enable_interrupt();
-    TRF79x0_init();
-
-    if (GPIO_getInputPinValue(GPIO_PORT_P1, GPIO_PIN1) == GPIO_INPUT_PIN_LOW)
+    LED_Startup();
+    while(true)
     {
-        Mode = Read_RealCard_Mode;
-    }
-
-    while (true)
-    {
-        switch (Mode)
-        {
-        case Emulate_VirtualCard_Mode:
-
-            if (oldMode != Emulate_VirtualCard_Mode)
-            {
-                oldMode = Emulate_VirtualCard_Mode;
-                LED_ON(LED1);
-            }
-
-            Emulate_VirtualCard(&Mode);
-
-            break;
-
-        case Write_RealCard_Mode:
-
-            if (oldMode != Write_RealCard_Mode)
-            {
-                oldMode = Write_RealCard_Mode;
-                LED_ON(LED2);
-            }
-
-            Write_RealCard(&Mode);
-
-            break;
-
-        case Read_RealCard_Mode:
-
-            if (oldMode != Read_RealCard_Mode)
-            {
-                oldMode = Read_RealCard_Mode;
-                LED_ON(LED1);
-                LED_ON(LED2);
-            }
-
-            Read_RealCard(&Mode);
-
-            break;
-        }
-
-        if (Mode != oldMode)
-        {
-            LED_OFF(LED1);
-            LED_OFF(LED2);
-            LED_OFF(D2);
-            LED_OFF(D3);
-            LED_OFF(D4);
-        }
+        LED_SET(LP_LED_GREEN, pMode->bLedGreen);
+        LED_SET(LP_LED_RED, pMode->bLedRed);
+        pMode = pMode->current() ? pMode->next : pMode->prev;
+        LED_ChangeMode(); // at this time, timing of this animation is __mandatory__
     }
 }
 
-void Emulate_VirtualCard(st25tb_kiemul_Mode *pMode)
+bool MOD_Emulate_VirtualCard()
 {
-    tTRF79x0_IRQFlag irqFlag;
-    uint8_t ui8RxBuffer[2], ui8NFCTargetProtocol;
-
-    ST25TB_Target_ResetState();
-
-    TRF79x0_directCommand(TRF79X0_SOFT_INIT_CMD);
-    TRF79x0_directCommand(TRF79X0_IDLE_CMD);
-
-    TRF79x0_writeSingle(0x25, TRF79X0_ISO_CONTROL_REG);
-    TRF79x0_writeSingle(0xf0, TRF79X0_RX_SPECIAL_SETTINGS_REG); // test 0 ?
-    TRF79x0_writeSingle(TRF79X0_STATUS_CTRL_RF_ON, TRF79X0_CHIP_STATUS_CTRL_REG);
-    TRF79x0_writeSingle(TRF79X0_MOD_CTRL_MOD_ASK_10, TRF79X0_MODULATOR_CONTROL_REG);
-
-    TRF79x0_writeSingle(0x00, TRF79X0_REGULATOR_CONTROL_REG);
-    TRF79x0_writeSingle(0x0f, TRF79X0_FIFO_IRQ_LEVEL);
-    TRF79x0_writeSingle(0x03, TRF79X0_NFC_LOW_DETECTION_LEVEL);
-    TRF79x0_writeSingle(0x07, TRF79X0_NFC_TARGET_LEVEL_REG);
-
-    TRF79x0_readCont(ui8RxBuffer, TRF79X0_IRQ_STATUS_REG, sizeof(ui8RxBuffer));
-    TRF79x0_readSingle(&ui8NFCTargetProtocol, TRF79X0_NFC_TARGET_PROTOCOL_REG);
-
-    TRF79x0_directCommand(TRF79X0_RUN_DECODERS_CMD);
+    bool bContinueStateMachine, bExitMode = false, bNextOrPrev = true;
+    uint8_t BP_IrqSource, TRF7970A_irqStatus;
 
     do
     {
-        irqFlag = TRF79x0_irqHandler(Target, 250);
-        if(irqFlag == IRQ_STATUS_RX_COMPLETE)
+        ST25TB_Target_ResetState();
+        ST25TB_TRF7970A_Mode(false);
+
+        do
         {
-            if(ST25TB_Target_StateMachine(g_ui8FifoBuffer, g_ui8cbFifoBuffer) == Invalid)
+            bContinueStateMachine = false;
+
+            BP_IrqSource = BP_Wait_for_Buttons_or_TRF7970A(&TRF7970A_irqStatus);
+            if(BP_IrqSource & BP_IRQ_SOURCE_LP_S1)
             {
-                irqFlag = IRQ_STATUS_PROTOCOL_ERROR;
+                bExitMode = true;
+                bNextOrPrev = false;
             }
-        }
-
-    } while(irqFlag == IRQ_STATUS_RX_COMPLETE);
-
-    if (GPIO_getInputPinValue(GPIO_PORT_P1, GPIO_PIN1) == GPIO_INPUT_PIN_LOW)
-    {
-        *pMode = Write_RealCard_Mode;
-    }
-}
-
-void Write_RealCard(st25tb_kiemul_Mode *pMode)
-{
-    uint8_t ui8RxBuffer[2];
-    bool bIsEqual;
-
-    TRF79x0_directCommand(TRF79X0_SOFT_INIT_CMD);
-    TRF79x0_directCommand(TRF79X0_IDLE_CMD);
-
-    TRF79x0_writeSingle(0x0c, TRF79X0_ISO_CONTROL_REG);
-    TRF79x0_writeSingle(0xf0, TRF79X0_RX_SPECIAL_SETTINGS_REG); // test 0 ?
-    TRF79x0_writeSingle(TRF79X0_STATUS_CTRL_RF_ON, TRF79X0_CHIP_STATUS_CTRL_REG);
-    TRF79x0_writeSingle(TRF79X0_MOD_CTRL_MOD_ASK_10, TRF79X0_MODULATOR_CONTROL_REG);
-
-    TRF79x0_writeSingle(0x00, TRF79X0_REGULATOR_CONTROL_REG);
-    TRF79x0_writeSingle(0x0f, TRF79X0_FIFO_IRQ_LEVEL);
-    TRF79x0_writeSingle(0x03, TRF79X0_NFC_LOW_DETECTION_LEVEL);
-    TRF79x0_writeSingle(0x07, TRF79X0_NFC_TARGET_LEVEL_REG);
-
-    TRF79x0_readCont(ui8RxBuffer, TRF79X0_IRQ_STATUS_REG, sizeof(ui8RxBuffer));
-
-    if(ST25TB_Initiator_Compare_UID_with_Ref(&bIsEqual))
-    {
-        if (bIsEqual)
-        {
-            LED_ON(D2);
-            if(ST25TB_Initiator_Write_Then_Compare())
+            else if(BP_IrqSource & BP_IRQ_SOURCE_LP_S2)
             {
-                LED_ON(D4);
+                bExitMode = true;
+                bNextOrPrev = true;
             }
-            else
+            else if(BP_IrqSource & BP_IRQ_SOURCE_TRF7970A)
             {
-                LED_ON(D3);
+                if (ST25TB_Recv(false, TRF7970A_irqStatus))
+                {
+                    if (ST25TB_Target_StateMachine() != Invalid)
+                    {
+                        bContinueStateMachine = true;
+                    }
+                }
             }
-        }
-        else
-        {
-            LED_ON(D3);
-        }
 
-        while (GPIO_getInputPinValue(GPIO_PORT_P1, GPIO_PIN1))
-        {
-            MCU_delayMillisecond(25);
         }
-
-        *pMode = Emulate_VirtualCard_Mode;
+        while (bContinueStateMachine);
     }
+    while (!bExitMode);
+
+    return bNextOrPrev;
 }
 
-void Read_RealCard(st25tb_kiemul_Mode *pMode)
+bool MOD_Write_VirtualToCard()
 {
-    uint8_t ui8RxBuffer[2];
-    bool bIsEqual;
+    bool bExitMode = false, bNextOrPrev = true;
+    uint8_t BP_IrqSource;
 
-    TRF79x0_directCommand(TRF79X0_SOFT_INIT_CMD);
-    TRF79x0_directCommand(TRF79X0_IDLE_CMD);
-
-    TRF79x0_writeSingle(0x0c, TRF79X0_ISO_CONTROL_REG);
-    TRF79x0_writeSingle(0xf0, TRF79X0_RX_SPECIAL_SETTINGS_REG); // test 0 ?
-    TRF79x0_writeSingle(TRF79X0_STATUS_CTRL_RF_ON, TRF79X0_CHIP_STATUS_CTRL_REG);
-    TRF79x0_writeSingle(TRF79X0_MOD_CTRL_MOD_ASK_10, TRF79X0_MODULATOR_CONTROL_REG);
-
-    TRF79x0_writeSingle(0x00, TRF79X0_REGULATOR_CONTROL_REG);
-    TRF79x0_writeSingle(0x0f, TRF79X0_FIFO_IRQ_LEVEL);
-    TRF79x0_writeSingle(0x03, TRF79X0_NFC_LOW_DETECTION_LEVEL);
-    TRF79x0_writeSingle(0x07, TRF79X0_NFC_TARGET_LEVEL_REG);
-
-    TRF79x0_readCont(ui8RxBuffer, TRF79X0_IRQ_STATUS_REG, sizeof(ui8RxBuffer));
-
-    if(ST25TB_Initiator_Read_Reference(&bIsEqual))
+    do
     {
-        LED_ON(D2);
-        if (bIsEqual)
+        ST25TB_TRF7970A_Mode(true);
+        BP_IrqSource = ST25TB_Initiator_Write_Card(); // avoid dangerous area with ST25TB_DO_NOT_WRITE_DANGEROUS_SECTOR
+        TRF7970A_writeSingle(0, TRF79X0_CHIP_STATUS_CTRL_REG);
+
+        if(BP_IrqSource == BP_IRQ_SOURCE_NONE)
         {
-            ST25TB_Write_Reference_to_Flash();
-            LED_ON(D4);
+            LED_ON(BP_LED_BLUE);
+            LED_OFF(BP_LED_RED);
+            LED_ON(BP_LED_GREEN);
+            BP_IrqSource = BP_Wait_for_Buttons();
         }
-        else
+        else if(BP_IrqSource & (BP_IRQ_SOURCE_TRF7970A | BP_IRQ_SOURCE_ST25TB_PROTOCOL_ERR))
         {
-            LED_ON(D3);
+            LED_ON(BP_LED_RED);
         }
 
-        while (GPIO_getInputPinValue(GPIO_PORT_P1, GPIO_PIN1))
+        if(BP_IrqSource & BP_IRQ_SOURCE_LP_S1)
         {
-            MCU_delayMillisecond(25);
+            bExitMode = true;
+            bNextOrPrev = false;
         }
-
-        *pMode = Emulate_VirtualCard_Mode;
+        else if(BP_IrqSource & BP_IRQ_SOURCE_LP_S2)
+        {
+            bExitMode = true;
+            bNextOrPrev = true;
+        }
+        // other is timer or trf / protocol error, no exit
     }
+    while (!bExitMode);
 
+    return bNextOrPrev;
 }
 
-
-#pragma vector=PORT2_VECTOR
-__interrupt void Port2_ISR(void)
+bool MOD_Read_CardToFlash()
 {
-    if(P2IV == P2IV_P2IFG2)
+    bool bExitMode = false, bNextOrPrev = true;
+    uint8_t BP_IrqSource;
+
+    do
     {
-        g_ui8IrqFlag = 0x01;
-        __bic_SR_register_on_exit(LPM0_bits);
+        ST25TB_TRF7970A_Mode(true);
+        BP_IrqSource = ST25TB_Initiator_Read_Card();
+        TRF7970A_writeSingle(0, TRF79X0_CHIP_STATUS_CTRL_REG);
+
+        if(BP_IrqSource == BP_IRQ_SOURCE_NONE)
+        {
+            LED_ON(BP_LED_BLUE);
+            LED_OFF(BP_LED_RED);
+            ST25TB_CARDS_toSlot(0);
+            LED_ON(BP_LED_GREEN);
+            BP_IrqSource = BP_Wait_for_Buttons();
+        }
+        else if(BP_IrqSource & (BP_IRQ_SOURCE_TRF7970A | BP_IRQ_SOURCE_ST25TB_PROTOCOL_ERR))
+        {
+            LED_ON(BP_LED_RED);
+        }
+
+        if(BP_IrqSource & BP_IRQ_SOURCE_LP_S1)
+        {
+            bExitMode = true;
+            bNextOrPrev = false;
+        }
+        else if(BP_IrqSource & BP_IRQ_SOURCE_LP_S2)
+        {
+            bExitMode = true;
+            bNextOrPrev = true;
+        }
+        // other is timer or trf / protocol error, no exit
+    }
+    while(!bExitMode);
+
+    return bNextOrPrev;
+}
+
+void LED_Startup()
+{
+    uint8_t i;
+
+    for(i = 0; i < 2; i++)
+    {
+        LED_ON(LP_LED1);
+        LP_delayMillisecond(LED_ACTION_DELAY * 8);
+        LED_OFF(LP_LED1);
+        LP_delayMillisecond(LED_ACTION_DELAY);
+
+        LED_ON(LP_LED2);
+        LP_delayMillisecond(LED_ACTION_DELAY);
+        LED_OFF(LP_LED2);
+        LP_delayMillisecond(LED_ACTION_DELAY);
+
+        LED_ON(BP_LED4);
+        LP_delayMillisecond(LED_ACTION_DELAY);
+        LED_OFF(BP_LED4);
+        LP_delayMillisecond(LED_ACTION_DELAY);
+
+        LED_ON(BP_LED3);
+        LP_delayMillisecond(LED_ACTION_DELAY);
+        LED_OFF(BP_LED3);
+        LP_delayMillisecond(LED_ACTION_DELAY);
+
+        LED_ON(BP_LED2);
+        LP_delayMillisecond(LED_ACTION_DELAY * 8);
+        LED_OFF(BP_LED2);
+        LP_delayMillisecond(LED_ACTION_DELAY);
+
+        LED_ON(BP_LED3);
+        LP_delayMillisecond(LED_ACTION_DELAY);
+        LED_OFF(BP_LED3);
+        LP_delayMillisecond(LED_ACTION_DELAY);
+
+        LED_ON(BP_LED4);
+        LP_delayMillisecond(LED_ACTION_DELAY);
+        LED_OFF(BP_LED4);
+        LP_delayMillisecond(LED_ACTION_DELAY);
+
+        LED_ON(LP_LED2);
+        LP_delayMillisecond(LED_ACTION_DELAY);
+        LED_OFF(LP_LED2);
+        LP_delayMillisecond(LED_ACTION_DELAY);
     }
 }
 
+void LED_ChangeMode()
+{
+    LED_ON(BP_LED4);
+    LP_delayMillisecond(LED_ACTION_DELAY);
+    LED_OFF(BP_LED4);
+    LP_delayMillisecond(LED_ACTION_DELAY);
+
+    LED_ON(BP_LED3);
+    LP_delayMillisecond(LED_ACTION_DELAY);
+    LED_OFF(BP_LED3);
+    LP_delayMillisecond(LED_ACTION_DELAY);
+
+    LED_ON(BP_LED2);
+    LP_delayMillisecond(LED_ACTION_DELAY);
+    LED_OFF(BP_LED2);
+}
