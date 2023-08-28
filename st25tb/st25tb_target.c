@@ -91,7 +91,7 @@ tSt25TbState ST25TB_Target_StateMachine()
             }
             else if (g_ui8FifoBuffer[0] == ST25TB_CMD_GET_UID)
             {
-                pcbData = ST25TB_CARDS_CurrentCard[0x11];
+                pcbData = ST25TB_CARDS_CurrentCard[ST25TB_CARDS_INDEX_UID];
                 cbData = 2 * sizeof(ST25TB_CARDS_CurrentCard[0]);
             }
         }
