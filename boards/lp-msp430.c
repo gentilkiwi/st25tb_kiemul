@@ -1,3 +1,8 @@
+/*  Benjamin DELPY `gentilkiwi`
+    https://blog.gentilkiwi.com
+    benjamin@gentilkiwi.com
+    Licence : https://creativecommons.org/licenses/by/4.0/
+*/
 #include "lp-msp430.h"
 
 volatile bool g_button_LP_S1_pressed = false, g_button_LP_S2_pressed = false;

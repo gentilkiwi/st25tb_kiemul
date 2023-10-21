@@ -1,3 +1,8 @@
+/*  Benjamin DELPY `gentilkiwi`
+    https://blog.gentilkiwi.com
+    benjamin@gentilkiwi.com
+    Licence : https://creativecommons.org/licenses/by/4.0/
+*/
 #include "trf7970a.h"
 
 volatile bool g_trf7970a_irq_flag = false;

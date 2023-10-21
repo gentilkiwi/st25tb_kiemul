@@ -1,3 +1,8 @@
+/*  Benjamin DELPY `gentilkiwi`
+    https://blog.gentilkiwi.com
+    benjamin@gentilkiwi.com
+    Licence : https://creativecommons.org/licenses/by/4.0/
+*/
 #include "st25tb.h"
 
 uint8_t g_ui8FifoBuffer[0x20];

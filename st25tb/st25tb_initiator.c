@@ -1,3 +1,8 @@
+/*  Benjamin DELPY `gentilkiwi`
+    https://blog.gentilkiwi.com
+    benjamin@gentilkiwi.com
+    Licence : https://creativecommons.org/licenses/by/4.0/
+*/
 #include "st25tb_initiator.h"
 
 uint8_t ST25TB_Initiator_CMD_Initiate(uint8_t *pui8ChipId);
