@@ -33,7 +33,7 @@ uint8_t ST25TB_Target_AdjustIdxForSpecialAddr(uint8_t original)
 
 tSt25TbState ST25TB_Target_StateMachine()
 {
-    uint8_t cbData = 0, idx;
+    uint8_t cbData = 0, idx, delay;
     const uint8_t *pcbData = 0;
 
     switch (g_eCurrentTargetState)
@@ -46,6 +46,7 @@ tSt25TbState ST25TB_Target_StateMachine()
             g_eCurrentTargetState = Inventory;
             pcbData = &st25tb_ui8ChipId;
             cbData = sizeof(st25tb_ui8ChipId);
+            delay = ST25TB_TARGET_GLOBAL_DELAY_US + ST25TB_TARGET_MEDIUM_DELAY_US;
         }
         else
         {
@@ -64,11 +65,13 @@ tSt25TbState ST25TB_Target_StateMachine()
             }
             pcbData = &st25tb_ui8ChipId;
             cbData = sizeof(st25tb_ui8ChipId);
+            delay = ST25TB_TARGET_GLOBAL_DELAY_US + ST25TB_TARGET_MEDIUM_DELAY_US;
         }
         else if ((g_ui8cbFifoBuffer >= 1) && ((g_ui8FifoBuffer[0] & 0x0f) == ST25TB_CMD_SLOT_MARKER_MASK)) // Slot_marker() mask includes Initiate() and Pcall16()
         {
             pcbData = &st25tb_ui8ChipId;
             cbData = sizeof(st25tb_ui8ChipId);
+            delay = ST25TB_TARGET_GLOBAL_DELAY_US + ST25TB_TARGET_MEDIUM_DELAY_US;
         }
         else
         {
@@ -81,18 +84,19 @@ tSt25TbState ST25TB_Target_StateMachine()
 
         if (g_ui8cbFifoBuffer == 1)
         {
-            if (g_ui8FifoBuffer[0] == ST25TB_CMD_RESET_TO_INVENTORY)
+            if (g_ui8FifoBuffer[0] == ST25TB_CMD_GET_UID)
+            {
+                pcbData = ST25TB_CARDS_CurrentCard[ST25TB_CARDS_INDEX_UID];
+                cbData = 2 * sizeof(ST25TB_CARDS_CurrentCard[0]);
+                delay = ST25TB_TARGET_GLOBAL_DELAY_US;
+            }
+            else if (g_ui8FifoBuffer[0] == ST25TB_CMD_RESET_TO_INVENTORY)
             {
                 g_eCurrentTargetState = Inventory;
             }
             else if (g_ui8FifoBuffer[0] == ST25TB_CMD_COMPLETION)
             {
                 g_eCurrentTargetState = Deactivated;
-            }
-            else if (g_ui8FifoBuffer[0] == ST25TB_CMD_GET_UID)
-            {
-                pcbData = ST25TB_CARDS_CurrentCard[ST25TB_CARDS_INDEX_UID];
-                cbData = 2 * sizeof(ST25TB_CARDS_CurrentCard[0]);
             }
         }
         else if (g_ui8cbFifoBuffer == 2)
@@ -104,6 +108,7 @@ tSt25TbState ST25TB_Target_StateMachine()
                 {
                     pcbData = ST25TB_CARDS_CurrentCard[idx];
                     cbData = sizeof(ST25TB_CARDS_CurrentCard[0]);
+                    delay = ST25TB_TARGET_GLOBAL_DELAY_US + ST25TB_TARGET_SMALL_DELAY_US;
                 }
             }
         }
@@ -119,6 +124,7 @@ tSt25TbState ST25TB_Target_StateMachine()
                 ST25TB_CARDS_toSlot(0); // maybe move at the end for Flash operation ? (slow, even if ret is not really needed)
                 pcbData = ST25TB_TARGET_KIWI_SPECIAL_RETCODE_OK;
                 cbData = sizeof(ST25TB_TARGET_KIWI_SPECIAL_RETCODE_OK);
+                delay = ST25TB_TARGET_GLOBAL_DELAY_US;
             }
         }
 
@@ -134,6 +140,7 @@ tSt25TbState ST25TB_Target_StateMachine()
             }
             pcbData = &st25tb_ui8ChipId;
             cbData = sizeof(st25tb_ui8ChipId);
+            delay = ST25TB_TARGET_GLOBAL_DELAY_US + ST25TB_TARGET_MEDIUM_DELAY_US;
         }
         else
         {
@@ -152,9 +159,7 @@ tSt25TbState ST25TB_Target_StateMachine()
 
     if (pcbData && cbData)
     {
-#if defined(ST25TB_TARGET_DELAY_US)
-        LP_delayMicrosecond(ST25TB_TARGET_DELAY_US);
-#endif
+        LP_delayMicrosecond(delay);
         if(!ST25TB_Send(pcbData, cbData))
         {
             g_eCurrentTargetState = Invalid;

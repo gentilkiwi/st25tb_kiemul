@@ -42,6 +42,3 @@ bool LP_BUTTON_WaitFor_LP_S1_or_LP_S2(); // LP_S1, true, LP_S2, false
 
 // TODO: better
 extern volatile bool g_trf7970a_irq_flag;
-
-
-#define DEBUG_PIN               LP_BP_HEADER_19

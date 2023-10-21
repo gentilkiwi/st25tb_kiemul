@@ -16,9 +16,13 @@
  */
 
 #if defined(__MSP430F5529__)
-#define ST25TB_TARGET_DELAY_US  80
+#define ST25TB_TARGET_GLOBAL_DELAY_US  70 // (+~12 of the function call)
+#define ST25TB_TARGET_MEDIUM_DELAY_US  14
+#define ST25TB_TARGET_SMALL_DELAY_US   5
 #elif defined(__MSP430FR2476__)
-#define ST25TB_TARGET_DELAY_US  12
+#define ST25TB_TARGET_GLOBAL_DELAY_US  13
+#define ST25TB_TARGET_MEDIUM_DELAY_US  21
+#define ST25TB_TARGET_SMALL_DELAY_US   7
 #else
 #error Target is not supported !
 #endif

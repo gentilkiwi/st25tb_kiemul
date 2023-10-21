@@ -3,14 +3,18 @@
 //#define ST25TB_DO_NOT_WRITE_DANGEROUS_SECTOR
 #include "st25tb/st25tb_initiator.h"
 
+#define ST25TB_KIEMUL_LED_ANIMATION
+
+#if defined(ST25TB_KIEMUL_LED_ANIMATION)
 #define LED_ACTION_DELAY   15 // DO NOT TOUCH !
+void LED_Startup();
+void LED_ChangeMode();
+#endif
 
 bool MOD_Emulate_VirtualCard();
 bool MOD_Write_VirtualToCard();
 bool MOD_Read_CardToFlash();
 
-void LED_Startup();
-void LED_ChangeMode();
 
 typedef bool (* PMODE_FUNCTION) ();
 typedef struct _KIEMUL_MODE {
@@ -41,13 +45,24 @@ void main()
     TRF7970A_init();
     ST25TB_Target_Init();
 
+#if defined(ST25TB_KIEMUL_LED_ANIMATION)
     LED_Startup();
+#endif
+
     while(true)
     {
         LED_SET(LP_LED_GREEN, pMode->bLedGreen);
         LED_SET(LP_LED_RED, pMode->bLedRed);
         pMode = pMode->current() ? pMode->next : pMode->prev;
+
+#if defined(ST25TB_KIEMUL_LED_ANIMATION)
         LED_ChangeMode(); // at this time, timing of this animation is __mandatory__
+#else
+        LED_OFF(BP_LED4);
+        LED_OFF(BP_LED3);
+        LED_OFF(BP_LED2);
+        LP_delayMillisecond(50);
+#endif
     }
 }
 
@@ -86,7 +101,6 @@ bool MOD_Emulate_VirtualCard()
                     }
                 }
             }
-
         }
         while (bContinueStateMachine);
     }
@@ -176,6 +190,7 @@ bool MOD_Read_CardToFlash()
     return bNextOrPrev;
 }
 
+#if defined(ST25TB_KIEMUL_LED_ANIMATION)
 void LED_Startup()
 {
     uint8_t i;
@@ -240,3 +255,4 @@ void LED_ChangeMode()
     LP_delayMillisecond(LED_ACTION_DELAY);
     LED_OFF(BP_LED2);
 }
+#endif
