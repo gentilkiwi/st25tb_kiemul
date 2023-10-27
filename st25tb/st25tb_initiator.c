@@ -168,7 +168,7 @@ uint8_t ST25TB_Initiator_CMD_Get_Uid(uint8_t pui8Data[8])
         {
             *(uint64_t *) pui8Data = *(uint64_t *) g_ui8FifoBuffer;
             ret = BP_IRQ_SOURCE_NONE;
-            LP_delayMillisecond(1);
+            LP_TIMER_delay_Millisecond(1);
         }
         else
         {
@@ -227,7 +227,7 @@ uint8_t ST25TB_Initiator_CMD_Read_Block(const uint8_t ui8BlockIdx, uint8_t pui8D
         {
             *((uint32_t *) pui8Data) = *(uint32_t *) g_ui8FifoBuffer;
             ret = BP_IRQ_SOURCE_NONE;
-            LP_delayMillisecond(4);
+            LP_TIMER_delay_Millisecond(4);
         }
         else
         {
@@ -266,7 +266,7 @@ uint8_t ST25TB_Initiator_CMD_Write_Block(const uint8_t ui8BlockIdx, const uint8_
     if (ST25TB_Send(ST25TB_Initiator_CMD_Write_Block_data, sizeof(ST25TB_Initiator_CMD_Write_Block_data)))
     {
         ret = BP_IRQ_SOURCE_NONE;
-        LP_delayMillisecond(((ui8BlockIdx == 5) || (ui8BlockIdx == 6)) ? ST25TB_DELAY_WRITE_TIME_COUNTER : ST25TB_DELAY_WRITE_TIME_EEPROM);
+        LP_TIMER_delay_Millisecond(((ui8BlockIdx == 5) || (ui8BlockIdx == 6)) ? ST25TB_DELAY_WRITE_TIME_COUNTER : ST25TB_DELAY_WRITE_TIME_EEPROM);
     }
     else
     {

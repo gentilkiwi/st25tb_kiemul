@@ -9,12 +9,12 @@ volatile bool g_trf7970a_irq_flag = false;
 
 void TRF7970A_init()
 {
-    LP_delayMillisecond(10);
+    LP_TIMER_delay_Millisecond(10);
 
     // 6.11 TRF7970A Initialization
     TRF7970A_directCommand(TRF79X0_SOFT_INIT_CMD);
     TRF7970A_directCommand(TRF79X0_IDLE_CMD);
-    LP_delayMillisecond(1);
+    LP_TIMER_delay_Millisecond(1);
     TRF7970A_directCommand(TRF79X0_RESET_FIFO_CMD);
     TRF7970A_writeSingle(0x00, TRF79X0_CHIP_STATUS_CTRL_REG);
     TRF7970A_clearIrqStatus();

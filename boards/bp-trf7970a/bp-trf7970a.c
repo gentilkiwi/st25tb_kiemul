@@ -25,7 +25,7 @@ void BP_SPI_GPIO_init()
 
     BP_TRF_EN_DISABLE();
     GPIO_setAsOutputPin(BP_TRF_EN);
-    LP_delayMillisecond(10);
+    LP_TIMER_delay_Millisecond(10);
     BP_TRF_EN_ENABLE();
 
     GPIO_setAsInputPin(BP_TRF_IRQ);
@@ -78,7 +78,7 @@ uint8_t BP_Wait_for_Buttons_or_TRF7970A_or_Timeout(uint8_t *pTRF7970A_irqStatus,
 
     g_trf7970a_irq_flag = GPIO_getInputPinValue(BP_TRF_IRQ); // because sometimes it's already in IRQ
 
-    LP_timerInit(timeout_ms);
+    LP_TIMER_StartTimer(timeout_ms);
     while(!g_trf7970a_irq_flag && !g_irq_Timer_TimeOut && !g_button_LP_S1_pressed && !g_button_LP_S2_pressed)
     {
         __low_power_mode_0();
@@ -107,7 +107,7 @@ uint8_t BP_Wait_for_Buttons_or_TRF7970A_or_Timeout(uint8_t *pTRF7970A_irqStatus,
     {
         ret |= BP_IRQ_SOURCE_TIMER;
     }
-    LP_timerDisable(); // implicit false
+    LP_TIMER_Disable();
 
     return ret;
 }

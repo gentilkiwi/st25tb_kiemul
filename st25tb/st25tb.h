@@ -17,17 +17,17 @@
  *  t1 Synchronization delay          151 탎
  *  t2 Answer to new request delay >= 132 탎
  *
- *  -> focus on t0 = 155 탎 ?
+ *  -> focus on t0 < 159 탎 ?
  */
 
 #if defined(__MSP430F5529__)
-#define ST25TB_TARGET_GLOBAL_DELAY_US  70 // (+~12 of the function call)
+#define ST25TB_TARGET_GLOBAL_DELAY_US  88
 #define ST25TB_TARGET_MEDIUM_DELAY_US  14
 #define ST25TB_TARGET_SMALL_DELAY_US   5
 #elif defined(__MSP430FR2476__)
-#define ST25TB_TARGET_GLOBAL_DELAY_US  13
-#define ST25TB_TARGET_MEDIUM_DELAY_US  21
-#define ST25TB_TARGET_SMALL_DELAY_US   7
+#define ST25TB_TARGET_GLOBAL_DELAY_US  49
+#define ST25TB_TARGET_MEDIUM_DELAY_US  17
+#define ST25TB_TARGET_SMALL_DELAY_US   5
 #else
 #error Target is not supported !
 #endif

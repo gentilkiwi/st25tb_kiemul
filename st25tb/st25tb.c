@@ -49,7 +49,7 @@ void ST25TB_TRF7970A_Mode(bool bIsInitiator)
 {
     TRF7970A_directCommand(TRF79X0_SOFT_INIT_CMD);
     TRF7970A_directCommand(TRF79X0_IDLE_CMD);
-    LP_delayMillisecond(2);
+    LP_TIMER_delay_Millisecond(2);
     TRF7970A_writeSingle(bIsInitiator ? 0x0c : 0x25, TRF79X0_ISO_CONTROL_REG);
     TRF7970A_writeSingle(0xf0, TRF79X0_RX_SPECIAL_SETTINGS_REG); // test 0 ?
     TRF7970A_writeSingle(TRF79X0_STATUS_CTRL_RF_ON, TRF79X0_CHIP_STATUS_CTRL_REG);
@@ -63,7 +63,7 @@ void ST25TB_TRF7970A_Mode(bool bIsInitiator)
     TRF7970A_clearIrqStatus();
     if(bIsInitiator)
     {
-        LP_delayMillisecond(2);
+        LP_TIMER_delay_Millisecond(2);
     }
     else
     {

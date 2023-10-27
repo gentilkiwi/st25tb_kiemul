@@ -21,7 +21,6 @@ bool MOD_Emulate_VirtualCard();
 bool MOD_Write_VirtualToCard();
 bool MOD_Read_CardToFlash();
 
-
 typedef bool (* PMODE_FUNCTION) ();
 typedef struct _KIEMUL_MODE {
     const PMODE_FUNCTION current;

@@ -24,17 +24,24 @@
 #define LP_BP_HEADER_I2C_SDA   LP_BP_HEADER_10
 
 extern volatile bool g_irq_Timer_TimeOut, g_button_LP_S1_pressed, g_button_LP_S2_pressed;
+// TODO: better
+extern volatile bool g_trf7970a_irq_flag;
 
 void LP_init();
 
-void LP_timerInit(uint16_t timeout_ms);
-void LP_timerDisable();
-void LP_delayMillisecond(uint32_t n_ms);
-void LP_delayMicrosecond(uint32_t n_us);
+inline void LP_TIMER_Disable();
+void LP_TIMER_StartTimer_internal(uint16_t n_unit_ms); // max is UINT16_MAX ( 1985 ms * 33 = ~ UINT16_MAX )
+void LP_TIMER_delay_Millisecond_internal(uint16_t n_unit_ms); // max is UINT16_MAX ( 1985 ms * 33 = ~ UINT16_MAX )
+inline void LP_TIMER_delay_Microsecond_internal(uint16_t n_unit_us); // see implementations
+
+#define LP_TIMER_StartTimer(n_ms)           LP_TIMER_StartTimer_internal(timeout_ms * 33)
+#define LP_TIMER_delay_Millisecond(n_ms)    LP_TIMER_delay_Millisecond_internal(n_ms * 33)
+#define LP_TIMER_delay_Microsecond(n_us)    LP_TIMER_delay_Microsecond_internal(n_us * LP_TIMER_A_MICRO_MULTIPL)
+
 
 void LP_SPI_init(uint32_t desiredSpiClock);
-void LP_SPI_sendByte(uint8_t data);
-uint8_t LP_SPI_receiveByte();
+inline void LP_SPI_sendByte(uint8_t data);
+inline uint8_t LP_SPI_receiveByte();
 
 #define LED_ON(x)      GPIO_setOutputHighOnPin(x)
 #define LED_OFF(x)     GPIO_setOutputLowOnPin(x)
@@ -44,6 +51,3 @@ uint8_t LP_SPI_receiveByte();
 void LP_BUTTON_WaitFor_LP_S1();
 void LP_BUTTON_WaitFor_LP_S2();
 bool LP_BUTTON_WaitFor_LP_S1_or_LP_S2(); // LP_S1, true, LP_S2, false
-
-// TODO: better
-extern volatile bool g_trf7970a_irq_flag;

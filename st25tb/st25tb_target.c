@@ -164,7 +164,7 @@ tSt25TbState ST25TB_Target_StateMachine()
 
     if (pcbData && cbData)
     {
-        LP_delayMicrosecond(delay);
+        LP_TIMER_delay_Microsecond(delay);
         if(!ST25TB_Send(pcbData, cbData))
         {
             g_eCurrentTargetState = Invalid;

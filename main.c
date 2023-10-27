@@ -41,7 +41,7 @@ void main()
         LED_OFF(BP_LED4);
         LED_OFF(BP_LED3);
         LED_OFF(BP_LED2);
-        LP_delayMillisecond(50);
+        LP_TIMER_delay_Millisecond(50);
 #endif
     }
 }
@@ -178,61 +178,61 @@ void LED_Startup()
     for(i = 0; i < 2; i++)
     {
         LED_ON(LP_LED1);
-        LP_delayMillisecond(LED_ACTION_DELAY * 8);
+        LP_TIMER_delay_Millisecond(LED_ACTION_DELAY * 8);
         LED_OFF(LP_LED1);
-        LP_delayMillisecond(LED_ACTION_DELAY);
+        LP_TIMER_delay_Millisecond(LED_ACTION_DELAY);
 
         LED_ON(LP_LED2);
-        LP_delayMillisecond(LED_ACTION_DELAY);
+        LP_TIMER_delay_Millisecond(LED_ACTION_DELAY);
         LED_OFF(LP_LED2);
-        LP_delayMillisecond(LED_ACTION_DELAY);
+        LP_TIMER_delay_Millisecond(LED_ACTION_DELAY);
 
         LED_ON(BP_LED4);
-        LP_delayMillisecond(LED_ACTION_DELAY);
+        LP_TIMER_delay_Millisecond(LED_ACTION_DELAY);
         LED_OFF(BP_LED4);
-        LP_delayMillisecond(LED_ACTION_DELAY);
+        LP_TIMER_delay_Millisecond(LED_ACTION_DELAY);
 
         LED_ON(BP_LED3);
-        LP_delayMillisecond(LED_ACTION_DELAY);
+        LP_TIMER_delay_Millisecond(LED_ACTION_DELAY);
         LED_OFF(BP_LED3);
-        LP_delayMillisecond(LED_ACTION_DELAY);
+        LP_TIMER_delay_Millisecond(LED_ACTION_DELAY);
 
         LED_ON(BP_LED2);
-        LP_delayMillisecond(LED_ACTION_DELAY * 8);
+        LP_TIMER_delay_Millisecond(LED_ACTION_DELAY * 8);
         LED_OFF(BP_LED2);
-        LP_delayMillisecond(LED_ACTION_DELAY);
+        LP_TIMER_delay_Millisecond(LED_ACTION_DELAY);
 
         LED_ON(BP_LED3);
-        LP_delayMillisecond(LED_ACTION_DELAY);
+        LP_TIMER_delay_Millisecond(LED_ACTION_DELAY);
         LED_OFF(BP_LED3);
-        LP_delayMillisecond(LED_ACTION_DELAY);
+        LP_TIMER_delay_Millisecond(LED_ACTION_DELAY);
 
         LED_ON(BP_LED4);
-        LP_delayMillisecond(LED_ACTION_DELAY);
+        LP_TIMER_delay_Millisecond(LED_ACTION_DELAY);
         LED_OFF(BP_LED4);
-        LP_delayMillisecond(LED_ACTION_DELAY);
+        LP_TIMER_delay_Millisecond(LED_ACTION_DELAY);
 
         LED_ON(LP_LED2);
-        LP_delayMillisecond(LED_ACTION_DELAY);
+        LP_TIMER_delay_Millisecond(LED_ACTION_DELAY);
         LED_OFF(LP_LED2);
-        LP_delayMillisecond(LED_ACTION_DELAY);
+        LP_TIMER_delay_Millisecond(LED_ACTION_DELAY);
     }
 }
 
 void LED_ChangeMode()
 {
     LED_ON(BP_LED4);
-    LP_delayMillisecond(LED_ACTION_DELAY);
+    LP_TIMER_delay_Millisecond(LED_ACTION_DELAY);
     LED_OFF(BP_LED4);
-    LP_delayMillisecond(LED_ACTION_DELAY);
+    LP_TIMER_delay_Millisecond(LED_ACTION_DELAY);
 
     LED_ON(BP_LED3);
-    LP_delayMillisecond(LED_ACTION_DELAY);
+    LP_TIMER_delay_Millisecond(LED_ACTION_DELAY);
     LED_OFF(BP_LED3);
-    LP_delayMillisecond(LED_ACTION_DELAY);
+    LP_TIMER_delay_Millisecond(LED_ACTION_DELAY);
 
     LED_ON(BP_LED2);
-    LP_delayMillisecond(LED_ACTION_DELAY);
+    LP_TIMER_delay_Millisecond(LED_ACTION_DELAY);
     LED_OFF(BP_LED2);
 }
 #endif
