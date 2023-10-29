@@ -175,7 +175,7 @@ void LED_Startup()
 {
     uint8_t i;
 
-    for(i = 0; i < 2; i++)
+    for(i = 0; i < 3; i++)
     {
         LED_ON(LP_LED1);
         LP_TIMER_delay_Millisecond(LED_ACTION_DELAY * 8);
@@ -221,18 +221,23 @@ void LED_Startup()
 
 void LED_ChangeMode()
 {
-    LED_ON(BP_LED4);
-    LP_TIMER_delay_Millisecond(LED_ACTION_DELAY);
-    LED_OFF(BP_LED4);
-    LP_TIMER_delay_Millisecond(LED_ACTION_DELAY);
+    uint8_t i;
 
-    LED_ON(BP_LED3);
-    LP_TIMER_delay_Millisecond(LED_ACTION_DELAY);
-    LED_OFF(BP_LED3);
-    LP_TIMER_delay_Millisecond(LED_ACTION_DELAY);
+    for(i = 0; i < 3; i++)
+    {
+        LED_ON(BP_LED4);
+        LP_TIMER_delay_Millisecond(LED_ACTION_DELAY);
+        LED_OFF(BP_LED4);
+        LP_TIMER_delay_Millisecond(LED_ACTION_DELAY);
 
-    LED_ON(BP_LED2);
-    LP_TIMER_delay_Millisecond(LED_ACTION_DELAY);
-    LED_OFF(BP_LED2);
+        LED_ON(BP_LED3);
+        LP_TIMER_delay_Millisecond(LED_ACTION_DELAY);
+        LED_OFF(BP_LED3);
+        LP_TIMER_delay_Millisecond(LED_ACTION_DELAY);
+
+        LED_ON(BP_LED2);
+        LP_TIMER_delay_Millisecond(LED_ACTION_DELAY);
+        LED_OFF(BP_LED2);
+    }
 }
 #endif

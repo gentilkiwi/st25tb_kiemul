@@ -44,7 +44,7 @@ uint8_t BP_Wait_for_Buttons_or_TRF7970A(uint8_t *pTRF7970A_irqStatus)
 {
     uint8_t ret = BP_IRQ_SOURCE_NONE;
 
-    g_trf7970a_irq_flag = GPIO_getInputPinValue(BP_TRF_IRQ); // because sometimes it's already in IRQ
+    g_trf7970a_irq_flag = BP_TRF_READ_IRQ(); // because sometimes it's already in IRQ
     while(!g_trf7970a_irq_flag && !g_button_LP_S1_pressed && !g_button_LP_S2_pressed)
     {
         __low_power_mode_0();
@@ -76,7 +76,7 @@ uint8_t BP_Wait_for_Buttons_or_TRF7970A_or_Timeout(uint8_t *pTRF7970A_irqStatus,
 {
     uint8_t ret = BP_IRQ_SOURCE_NONE;
 
-    g_trf7970a_irq_flag = GPIO_getInputPinValue(BP_TRF_IRQ); // because sometimes it's already in IRQ
+    g_trf7970a_irq_flag = BP_TRF_READ_IRQ(); // because sometimes it's already in IRQ
 
     LP_TIMER_StartTimer(timeout_ms);
     while(!g_trf7970a_irq_flag && !g_irq_Timer_TimeOut && !g_button_LP_S1_pressed && !g_button_LP_S2_pressed)

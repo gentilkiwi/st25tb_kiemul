@@ -8,16 +8,22 @@
 
 void TRF7970A_init();
 
-void TRF7970A_directCommand(uint8_t ui8Command);
-uint8_t TRF7970A_readSingle(uint8_t ui8Register);
-void TRF7970A_writeSingle(uint8_t ui8Value, uint8_t ui8Register);
-void TRF7970A_readCont(uint8_t *pui8Payload, uint8_t ui8Register, uint8_t ui8Length);
-void TRF7970A_writeCont(uint8_t *pui8Payload, uint8_t ui8Register, uint8_t ui8Length);
+void TRF7970A_directCommand_internal(uint8_t ui8Command);
+uint8_t TRF7970A_readSingle_internal(uint8_t ui8Register);
+void TRF7970A_writeSingle_internal(uint8_t ui8Value, uint8_t ui8Register);
+void TRF7970A_readCont_internal(uint8_t *pui8Payload, uint8_t ui8Register, uint8_t ui8Length);
+void TRF7970A_writeCont_internal(uint8_t *pui8Payload, uint8_t ui8Register, uint8_t ui8Length);
 void TRF7970A_writePacketToTransmit(const uint8_t *pui8Payload, uint8_t ui8Length);
 void TRF7970A_ignoreCmd();
 uint8_t TRF7970A_waitIrq();
 
-#define TRF7970A_getIrqStatus()   TRF7970A_readSingle(TRF79X0_IRQ_STATUS_REG)
+#define TRF7970A_directCommand(ui8Command)                      TRF7970A_directCommand_internal((ui8Command & TRF79X0_ADDRESS_MASK) | TRF79X0_CONTROL_CMD)
+#define TRF7970A_readSingle(ui8Register)                        TRF7970A_readSingle_internal((ui8Register & TRF79X0_ADDRESS_MASK) | TRF79X0_CONTROL_REG_READ | TRF79X0_REG_MODE_SINGLE)
+#define TRF7970A_writeSingle(ui8Value, ui8Register)             TRF7970A_writeSingle_internal(ui8Value, (ui8Register & TRF79X0_ADDRESS_MASK) | TRF79X0_CONTROL_REG_WRITE | TRF79X0_REG_MODE_SINGLE)
+#define TRF7970A_readCont(pui8Payload, ui8Register, ui8Length)  TRF7970A_readCont_internal(pui8Payload, (ui8Register & TRF79X0_ADDRESS_MASK) | TRF79X0_CONTROL_REG_READ | TRF79X0_REG_MODE_CONTINUOUS, ui8Length)
+#define TRF7970A_writeCont(pui8Payload, ui8Register, ui8Length) TRF7970A_writeCont_internal(pui8Payload, (ui8Register & TRF79X0_ADDRESS_MASK) | TRF79X0_CONTROL_REG_WRITE | TRF79X0_REG_MODE_CONTINUOUS, ui8Length)
+
+#define TRF7970A_getIrqStatus()     TRF7970A_readSingle(TRF79X0_IRQ_STATUS_REG)
 #define TRF7970A_clearIrqStatus()   TRF7970A_getIrqStatus()
 
 //#define TRF79X0_SPI_FREQ    4000000

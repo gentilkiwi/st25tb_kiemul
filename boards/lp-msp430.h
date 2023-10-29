@@ -38,7 +38,6 @@ inline void LP_TIMER_delay_Microsecond_internal(uint16_t n_unit_us); // see impl
 #define LP_TIMER_delay_Millisecond(n_ms)    LP_TIMER_delay_Millisecond_internal(n_ms * 33)
 #define LP_TIMER_delay_Microsecond(n_us)    LP_TIMER_delay_Microsecond_internal(n_us * LP_TIMER_A_MICRO_MULTIPL)
 
-
 void LP_SPI_init(uint32_t desiredSpiClock);
 inline void LP_SPI_sendByte(uint8_t data);
 inline uint8_t LP_SPI_receiveByte();

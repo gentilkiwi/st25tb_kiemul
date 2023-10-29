@@ -23,8 +23,10 @@
 #define BP_TRF_EN_ENABLE()        GPIO_setOutputHighOnPin(BP_TRF_EN);
 #define BP_TRF_EN_DISABLE()       GPIO_setOutputLowOnPin(BP_TRF_EN);
 
-#define BP_TRF_SPI_CS_ENABLE()    GPIO_setOutputLowOnPin(BP_TRF_SPI_CS)
-#define BP_TRF_SPI_CS_DISABLE()   GPIO_setOutputHighOnPin(BP_TRF_SPI_CS)
+#define BP_TRF_SPI_CS_ENABLE()    LP_BP_HEADER_09_CLR()
+#define BP_TRF_SPI_CS_DISABLE()   LP_BP_HEADER_09_SET()
+
+#define BP_TRF_READ_IRQ()         LP_BP_HEADER_18_VAL()
 
 #define BP_IRQ_SOURCE_NONE                 0x00
 #define BP_IRQ_SOURCE_TRF7970A             0x01

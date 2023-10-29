@@ -20,21 +20,16 @@ void TRF7970A_init()
     TRF7970A_clearIrqStatus();
 }
 
-void TRF7970A_directCommand(uint8_t ui8Command)
+void TRF7970A_directCommand_internal(uint8_t ui8Command)
 {
-    ui8Command &= TRF79X0_ADDRESS_MASK;
-    ui8Command |= TRF79X0_CONTROL_CMD;
-
     BP_TRF_SPI_CS_ENABLE();
     LP_SPI_sendByte(ui8Command);
     BP_TRF_SPI_CS_DISABLE();
 }
 
-uint8_t TRF7970A_readSingle(uint8_t ui8Register)
+uint8_t TRF7970A_readSingle_internal(uint8_t ui8Register)
 {
     uint8_t res;
-    ui8Register &= TRF79X0_ADDRESS_MASK;
-    ui8Register |= TRF79X0_CONTROL_REG_READ | TRF79X0_REG_MODE_SINGLE;
 
     BP_TRF_SPI_CS_ENABLE();
     LP_SPI_sendByte(ui8Register);
@@ -44,22 +39,16 @@ uint8_t TRF7970A_readSingle(uint8_t ui8Register)
     return res;
 }
 
-void TRF7970A_writeSingle(uint8_t ui8Value, uint8_t ui8Register)
+void TRF7970A_writeSingle_internal(uint8_t ui8Value, uint8_t ui8Register)
 {
-    ui8Register &= TRF79X0_ADDRESS_MASK;
-    ui8Register |= TRF79X0_CONTROL_REG_WRITE | TRF79X0_REG_MODE_SINGLE;
-
     BP_TRF_SPI_CS_ENABLE();
     LP_SPI_sendByte(ui8Register);
     LP_SPI_sendByte(ui8Value);
     BP_TRF_SPI_CS_DISABLE();
 }
 
-void TRF7970A_readCont(uint8_t *pui8Payload, uint8_t ui8Register, uint8_t ui8Length)
+void TRF7970A_readCont_internal(uint8_t *pui8Payload, uint8_t ui8Register, uint8_t ui8Length)
 {
-    ui8Register &= TRF79X0_ADDRESS_MASK;
-    ui8Register |= TRF79X0_CONTROL_REG_READ | TRF79X0_REG_MODE_CONTINUOUS;
-
     BP_TRF_SPI_CS_ENABLE();
     LP_SPI_sendByte(ui8Register);
     while (ui8Length > 0)
@@ -71,11 +60,8 @@ void TRF7970A_readCont(uint8_t *pui8Payload, uint8_t ui8Register, uint8_t ui8Len
     BP_TRF_SPI_CS_DISABLE();
 }
 
-void TRF7970A_writeCont(uint8_t *pui8Payload, uint8_t ui8Register, uint8_t ui8Length)
+void TRF7970A_writeCont_internal(uint8_t *pui8Payload, uint8_t ui8Register, uint8_t ui8Length)
 {
-    ui8Register &= TRF79X0_ADDRESS_MASK;
-    ui8Register |= TRF79X0_CONTROL_REG_WRITE | TRF79X0_REG_MODE_CONTINUOUS;
-
     BP_TRF_SPI_CS_ENABLE();
     LP_SPI_sendByte(ui8Register);
     while (ui8Length > 0)
@@ -119,7 +105,7 @@ void TRF7970A_ignoreCmd()
 
 uint8_t TRF7970A_waitIrq()
 {
-    g_trf7970a_irq_flag = GPIO_getInputPinValue(BP_TRF_IRQ); // because sometimes it's already in IRQ
+    g_trf7970a_irq_flag = BP_TRF_READ_IRQ(); // because sometimes it's already in IRQ
     while(!g_trf7970a_irq_flag)
     {
         __low_power_mode_0();
