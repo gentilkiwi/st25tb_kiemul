@@ -62,10 +62,11 @@ MEMORY
     INFOB                   : origin = 0x1900, length = 0x0080
     INFOC                   : origin = 0x1880, length = 0x0080
     INFOD                   : origin = 0x1800, length = 0x0080
-    FLASH                   : origin = 0x4400, length = 0xBB80
-    FLASH_STCARD            : origin = 0x10000,length = 0x200
-    FLASH2                  : origin = 0x10200,length = 0x141F8 /* Boundaries changed to fix CPU47 */
-    //FLASH2                  : origin = 0x10000,length = 0x143F8 /* Boundaries changed to fix CPU47 */
+    FLASH                   : origin = 0x4400, length = 0xB600
+    FLASH_STCARD            : origin = 0xFA00, length = 0x200
+    FLASHb                  : origin = 0xFC00, length = 0x0180
+    //FLASH                   : origin = 0x4400, length = 0xBB80
+    FLASH2                  : origin = 0x10000,length = 0x143F8 /* Boundaries changed to fix CPU47 */
     INT00                   : origin = 0xFF80, length = 0x0002
     INT01                   : origin = 0xFF82, length = 0x0002
     INT02                   : origin = 0xFF84, length = 0x0002

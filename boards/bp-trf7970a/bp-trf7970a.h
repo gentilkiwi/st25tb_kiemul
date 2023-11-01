@@ -20,8 +20,8 @@
 
 #define BP_TRF_SPI_FREQ    4000000
 
-#define BP_TRF_EN_ENABLE()        GPIO_setOutputHighOnPin(BP_TRF_EN);
-#define BP_TRF_EN_DISABLE()       GPIO_setOutputLowOnPin(BP_TRF_EN);
+#define BP_TRF_EN_ENABLE()        GPIO_setOutputHighOnPin(BP_TRF_EN)
+#define BP_TRF_EN_DISABLE()       GPIO_setOutputLowOnPin(BP_TRF_EN)
 
 #define BP_TRF_SPI_CS_ENABLE()    LP_BP_HEADER_09_CLR()
 #define BP_TRF_SPI_CS_DISABLE()   LP_BP_HEADER_09_SET()

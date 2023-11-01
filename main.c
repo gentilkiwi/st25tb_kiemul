@@ -22,7 +22,7 @@ void main()
     GPIO_enableInterrupt(LP_S1);
     GPIO_enableInterrupt(LP_S2);
 
-    TRF7970A_init();
+    //TRF7970A_init(); // Initialized in different modes
     ST25TB_Target_Init();
 
 #if defined(ST25TB_KIEMUL_LED_ANIMATION)

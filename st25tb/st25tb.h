@@ -21,18 +21,18 @@
  */
 
 #if defined(__MSP430F5529__)
-#define ST25TB_TARGET_GLOBAL_DELAY_US  98
+#define ST25TB_TARGET_GLOBAL_DELAY_US  100
 #define ST25TB_TARGET_MEDIUM_DELAY_US  13
 #define ST25TB_TARGET_SMALL_DELAY_US   5
 #elif defined(__MSP430FR2476__)
-#define ST25TB_TARGET_GLOBAL_DELAY_US  68
+#define ST25TB_TARGET_GLOBAL_DELAY_US  71
 #define ST25TB_TARGET_MEDIUM_DELAY_US  17
 #define ST25TB_TARGET_SMALL_DELAY_US   5
 #else
 #error Target is not supported !
 #endif
 
-typedef enum _tSt25TbState {
+typedef enum __attribute__((__packed__)) _tSt25TbState {
     Invalid,
     PowerOff,
     Ready,
@@ -57,7 +57,7 @@ typedef enum _tSt25TbState {
 #define ST25TB_DELAY_WRITE_TIME_EEPROM   5
 #define ST25TB_DELAY_WRITE_TIME_COUNTER  7
 
-extern uint8_t g_ui8FifoBuffer[0x20];
+extern uint8_t g_ui8FifoBuffer[0x10];
 extern uint8_t g_ui8cbFifoBuffer;
 
 bool ST25TB_Recv(bool bIsinitiator, uint8_t irqProvided);

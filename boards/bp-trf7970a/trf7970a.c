@@ -20,6 +20,18 @@ void TRF7970A_init()
     TRF7970A_clearIrqStatus();
 }
 
+void TRF7970A_writeRaw(const uint8_t *pcui8Payload, uint8_t ui8Length)
+{
+    BP_TRF_SPI_CS_ENABLE();
+    while (ui8Length > 0)
+    {
+        LP_SPI_sendByte(*pcui8Payload);
+        pcui8Payload++;
+        ui8Length--;
+    }
+    BP_TRF_SPI_CS_DISABLE();
+}
+
 void TRF7970A_directCommand_internal(uint8_t ui8Command)
 {
     BP_TRF_SPI_CS_ENABLE();
