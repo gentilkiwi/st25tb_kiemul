@@ -28,7 +28,7 @@
 #define LP_BP_HEADER_02    GPIO_PORT_P1, GPIO_PIN6 // P1.6 - Analog In
 #define LP_BP_HEADER_03    GPIO_PORT_P2, GPIO_PIN5 // P2.5 - UART RX (-> MCU)
 #define LP_BP_HEADER_04    GPIO_PORT_P2, GPIO_PIN6 // P2.6 - UART TX (<- MCU)
-#define LP_BP_HEADER_05    GPIO_PORT_P2, GPIO_PIN2 // P1.6 - GPIO(!)
+#define LP_BP_HEADER_05    GPIO_PORT_P2, GPIO_PIN2 // P2.2 - GPIO(!)
 #define LP_BP_HEADER_06    GPIO_PORT_P5, GPIO_PIN4 // P5.4 - Analog In
 #define LP_BP_HEADER_07    GPIO_PORT_P3, GPIO_PIN5 // P3.5 - SPI CLK
 #define LP_BP_HEADER_08    GPIO_PORT_P4, GPIO_PIN5 // P4.5 - GPIO (!)
@@ -48,10 +48,10 @@
 // J3 - TODO
 // J4 - TODO
 
-#define LP_LED1            GPIO_PORT_P1, GPIO_PIN0
-#define LP_LED2_RED        GPIO_PORT_P5, GPIO_PIN1
-#define LP_LED2_GREEN      GPIO_PORT_P5, GPIO_PIN0
-#define LP_LED2_BLUE       GPIO_PORT_P4, GPIO_PIN7
+#define LP_LED1            GPIO_PORT_P1, GPIO_PIN0 // P1.0
+#define LP_LED2_RED        GPIO_PORT_P5, GPIO_PIN1 // P5.1
+#define LP_LED2_GREEN      GPIO_PORT_P5, GPIO_PIN0 // P5.0
+#define LP_LED2_BLUE       GPIO_PORT_P4, GPIO_PIN7 // P4.7
 
 #define LP_LED2            LP_LED2_RED // to be compatible
 

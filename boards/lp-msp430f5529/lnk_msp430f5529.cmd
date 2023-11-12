@@ -62,8 +62,8 @@ MEMORY
     INFOB                   : origin = 0x1900, length = 0x0080
     INFOC                   : origin = 0x1880, length = 0x0080
     INFOD                   : origin = 0x1800, length = 0x0080
-    FLASH                   : origin = 0x4400, length = 0xB600
-    FLASH_STCARD            : origin = 0xFA00, length = 0x200
+    FLASH                   : origin = 0x4400, length = 0xB400
+    FLASH_STCARD            : origin = 0xF800, length = 0x0400 // Thank you 4k cards :(
     FLASHb                  : origin = 0xFC00, length = 0x0180
     //FLASH                   : origin = 0x4400, length = 0xBB80
     FLASH2                  : origin = 0x10000,length = 0x143F8 /* Boundaries changed to fix CPU47 */

@@ -5,6 +5,7 @@
 */
 #include "st25tb_initiator.h"
 
+uint8_t ST25TB_Initiator_ValidateAndGetNBSectorsFromUID(const uint8_t *pui8UID);
 uint8_t ST25TB_Initiator_CMD_Initiate(uint8_t *pui8ChipId);
 uint8_t ST25TB_Initiator_CMD_Select(const uint8_t ui8ChipId);
 uint8_t ST25TB_Initiator_CMD_Get_Uid(uint8_t pui8Data[8]);
@@ -17,7 +18,7 @@ uint8_t ST25TB_Initiator_CMD_CONFIRMED_Write_Block(const uint8_t ui8BlockIdx, co
 
 uint8_t ST25TB_Initiator_Read_Card()
 {
-    uint8_t BP_IrqSource, ui8ChipId, i;
+    uint8_t BP_IrqSource, ui8ChipId, i, nbSectors;
 
     BP_IrqSource = ST25TB_Initiator_CMD_Initiate(&ui8ChipId);
     if(BP_IrqSource == BP_IRQ_SOURCE_NONE)
@@ -28,14 +29,22 @@ uint8_t ST25TB_Initiator_Read_Card()
             BP_IrqSource = ST25TB_Initiator_CMD_CONFIRMED_Get_Uid((uint8_t *) ST25TB_CARDS_CurrentCard[ST25TB_CARDS_INDEX_UID]);
             if(BP_IrqSource == BP_IRQ_SOURCE_NONE)
             {
-                for(i = 0x00; (i < 0x10) && (BP_IrqSource == BP_IRQ_SOURCE_NONE); i++)
+                nbSectors = ST25TB_Initiator_ValidateAndGetNBSectorsFromUID((uint8_t *) ST25TB_CARDS_CurrentCard[ST25TB_CARDS_INDEX_UID]);
+                if(nbSectors)
                 {
-                    BP_IrqSource = ST25TB_Initiator_CMD_CONFIRMED_Read_Block(i, ST25TB_CARDS_CurrentCard[i]);
-                }
+                    for(i = 0; (i < nbSectors) && (BP_IrqSource == BP_IRQ_SOURCE_NONE); i++)
+                    {
+                        BP_IrqSource = ST25TB_Initiator_CMD_CONFIRMED_Read_Block(i, ST25TB_CARDS_CurrentCard[i]);
+                    }
 
-                if(BP_IrqSource == BP_IRQ_SOURCE_NONE)
+                    if(BP_IrqSource == BP_IRQ_SOURCE_NONE)
+                    {
+                        BP_IrqSource = ST25TB_Initiator_CMD_CONFIRMED_Read_Block(0xff, ST25TB_CARDS_CurrentCard[ST25TB_CARDS_INDEX_SYSTEM]);
+                    }
+                }
+                else
                 {
-                    BP_IrqSource = ST25TB_Initiator_CMD_CONFIRMED_Read_Block(0xff, ST25TB_CARDS_CurrentCard[ST25TB_CARDS_INDEX_SYSTEM]);
+                    BP_IrqSource = BP_IRQ_SOURCE_ST25TB_PROTOCOL_ERR;
                 }
             }
             ST25TB_Initiator_CMD_Completion();
@@ -47,7 +56,7 @@ uint8_t ST25TB_Initiator_Read_Card()
 
 uint8_t ST25TB_Initiator_Write_Card()
 {
-    uint8_t BP_IrqSource, ui8ChipId, ui8UID[8], i;
+    uint8_t BP_IrqSource, ui8ChipId, ui8UID[8], i, nbSectors;
 
     BP_IrqSource = ST25TB_Initiator_CMD_Initiate(&ui8ChipId);
     if(BP_IrqSource == BP_IRQ_SOURCE_NONE)
@@ -58,9 +67,10 @@ uint8_t ST25TB_Initiator_Write_Card()
             BP_IrqSource = ST25TB_Initiator_CMD_Get_Uid(ui8UID);
             if(BP_IrqSource == BP_IRQ_SOURCE_NONE)
             {
-                if ((*(uint64_t*) ui8UID) == (*(uint64_t*) ST25TB_CARDS_CurrentCard[ST25TB_CARDS_INDEX_UID]))
+                nbSectors = ST25TB_Initiator_ValidateAndGetNBSectorsFromUID(ui8UID);
+                if (nbSectors && ((*(uint64_t*) ui8UID) == (*(uint64_t*) ST25TB_CARDS_CurrentCard[ST25TB_CARDS_INDEX_UID]))) // implicit check of same size/techno :')
                 {
-                    for(i = 0x00; (i < 0x10) && (BP_IrqSource == BP_IRQ_SOURCE_NONE); i++)
+                    for(i = 0; (i < nbSectors) && (BP_IrqSource == BP_IRQ_SOURCE_NONE); i++)
                     {
 #if defined(ST25TB_DO_NOT_WRITE_DANGEROUS_SECTOR)
                         if((i == 5) || (i == 6))
@@ -111,6 +121,47 @@ uint8_t ST25TB_Initiator_SendRecv(const uint8_t *pui8Payload, const uint8_t ui8L
         ret = BP_IRQ_SOURCE_TRF7970A;
     }
 
+    return ret;
+}
+
+uint8_t ST25TB_Initiator_ValidateAndGetNBSectorsFromUID(const uint8_t *pui8UID)
+{
+    uint8_t ret = 0, chipId;
+
+    if(pui8UID[7] == 0xd0) // SR*/ST25TB*
+    {
+        chipId = pui8UID[5];
+
+        if((chipId == 0x33) || (chipId == 0x1b)) // ST25TB512-AT, ST25TB512-AC
+        {
+            ret = 16;
+        }
+        else if(chipId == 0x3f) // ST25TB02K
+        {
+            ret = 64;
+        }
+        else if(chipId == 0x1f) // ST25TB04K
+        {
+            ret = 128;
+        }
+        else
+        {
+            chipId >>= 2; // let's go legacy! (but not SR176)
+
+            if((chipId == 12) || (chipId == 6) || (chipId == 4)) // SRT512, SRI512, SRIX512
+            {
+                ret = 16;
+            }
+            else if(chipId == 15) // SRI2K
+            {
+                ret = 64;
+            }
+            else if((chipId == 7) || (chipId == 3)) // SRI4K, SRIX4K
+            {
+                ret = 128;
+            }
+        }
+    }
     return ret;
 }
 

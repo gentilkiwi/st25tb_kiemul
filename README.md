@@ -11,7 +11,7 @@ This is the support project of `ST25TB series NFC tags for fun in French public 
 
 You can use the local IDE or the online one (CCS Cloud). When using online IDE, do not forget to delete additionnal `.cmd` at the root of the project after the initial import ; they are conflicting with **specific** embeded ones in the project.
 
-You can reduce the code base but, at this time, the full project (emulator/writer/learner with led animations) needs (only) < 5 kilobytes for program and < 200 bytes of memory.
+You can reduce the code base but, at this time, the full project (emulator/writer/learner with led animations) needs (only) < 6 kilobytes for program and < 700 bytes of memory.
 
 
 ## Supported configurations
@@ -49,9 +49,9 @@ _GREEN led only_
 
 In this mode, it reacts like a normal ST25TB-AT cards, with few differences:
 - Sectors `0x05` and `0x06` are not limited to decrement ;
-- Sector `0xff` (system area) is not used to lock sectors/OTP ;
-- Sectors `0x7e` and `0x7f` can be used to read **and write** UID ;
-- Any writing operation to sector `0x60` will write current emulated card into flash memory.
+- Sector `0xff` (system area / internal is `0x80`) is not used to lock sectors/OTP ;
+- Sectors `0x81` and `0x82` can be used to read **and write** UID ;
+- Any writing operation to sector `0xfe` will write current emulated card into flash memory.
 
 _basically, it reacts like a memory card without limitation_
 
