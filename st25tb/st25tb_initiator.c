@@ -162,6 +162,7 @@ uint8_t ST25TB_Initiator_ValidateAndGetNBSectorsFromUID(const uint8_t *pui8UID)
             }
         }
     }
+
     return ret;
 }
 
