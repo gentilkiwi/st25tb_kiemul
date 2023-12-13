@@ -7,6 +7,14 @@
 
 volatile bool g_button_LP_S1_pressed = false, g_button_LP_S2_pressed = false, g_irq_Timer_TimeOut;
 
+void LP_LED_init()
+{
+    LED_OFF(LP_LED1);
+    LED_OFF(LP_LED2);
+    GPIO_setAsOutputPin(LP_LED1);
+    GPIO_setAsOutputPin(LP_LED2);
+}
+
 void LP_BUTTON_WaitFor_LP_S1()
 {
     g_button_LP_S1_pressed = false;

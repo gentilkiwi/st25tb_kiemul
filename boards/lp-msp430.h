@@ -47,6 +47,7 @@ inline uint8_t LP_SPI_receiveByte();
 #define LED_TOGGLE(x)  GPIO_toggleOutputOnPin(x)
 #define LED_SET(led, bIsOn) (bIsOn ? GPIO_setOutputHighOnPin : GPIO_setOutputLowOnPin)(led);
 
+void LP_LED_init();
 void LP_BUTTON_WaitFor_LP_S1();
 void LP_BUTTON_WaitFor_LP_S2();
 bool LP_BUTTON_WaitFor_LP_S1_or_LP_S2(); // LP_S1, true, LP_S2, false

@@ -17,18 +17,6 @@ void LP_CLOCK_init()
     CS_initFLLSettle(LP_MCU_FREQ / 1000, LP_MCU_FREQ / LP_XT1_FREQ);
 }
 
-void LP_LED_init()
-{
-    LED_OFF(LP_LED1);
-    LED_OFF(LP_LED2_RED);
-    LED_OFF(LP_LED2_GREEN);
-    LED_OFF(LP_LED2_BLUE);
-    GPIO_setAsOutputPin(LP_LED1);
-    GPIO_setAsOutputPin(LP_LED2_RED);
-    GPIO_setAsOutputPin(LP_LED2_GREEN);
-    GPIO_setAsOutputPin(LP_LED2_BLUE);
-}
-
 void LP_BUTTON_init(bool bIsInterrupt)
 {
     GPIO_setAsInputPinWithPullUpResistor(LP_S1);

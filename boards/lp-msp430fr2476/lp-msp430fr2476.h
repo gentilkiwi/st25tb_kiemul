@@ -73,3 +73,24 @@
 #define LP_BP_HEADER_09_SET() P1OUT |= BIT3
 #define LP_BP_HEADER_09_CLR() P1OUT &= ~BIT3
 #define LP_BP_HEADER_18_VAL() (P2IN & BIT1)
+
+#if defined(KIWI_LIGHT_PCB)
+/*
+ * 1. This temporary card is using a MSP430FR2476TRHB* instead of MSP430FR2476TRHA*
+ * So: PIN used by LP_LED2 (R, G, B) are *NOT* available, I use P1.1 instead here
+ *
+ * 2. I switched Green and Red LED in the BoosterPack part (oups)
+ *
+ * Below defines are here to fix on this particular card (~ only for me) by defining KIWI_LIGHT_PCB
+ *
+ */
+#undef  LP_LED2
+#define LP_LED2            GPIO_PORT_P1, GPIO_PIN1 // P1.1
+
+#undef  LP_BP_HEADER_12
+#define LP_BP_HEADER_12    GPIO_PORT_P4, GPIO_PIN2 // P4.2 - GPIO(!)/SPI CS
+
+#undef  LP_BP_HEADER_13
+#define LP_BP_HEADER_13    GPIO_PORT_P2, GPIO_PIN7 // P2.7 - GPIO(!)/SPI CS
+
+#endif
