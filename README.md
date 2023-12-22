@@ -83,7 +83,8 @@ Leds on the `DLP-7970ABP` board are used for status:
 - No, I'm not confident to be able to help to add 14B(') to https://github.com/emsec/ChameleonMini/tree/master/Firmware/Chameleon-Mini/Codec
   - otherwise I would have done it
 - ~~No, I will not create a single board with battery from available schematics of MSP430 LaunchPad & TRF7970A BoosterPack~~
-  - well, maybe?
+  - ~~well, maybe?~~
+  - well, I did: https://oshwlab.com/gentilkiwi/st25tb_kiemul
 - Yes, you can use other (better) MCU with the `TRF7970A`, even with the original `DLP-7970ABP` board
   - think aout STM32, Raspberry PI Pico or your prefered one with `SPI` support, **really**
 
@@ -99,6 +100,11 @@ Leds on the `DLP-7970ABP` board are used for status:
 - `DLP-7970ABP` - https://www.mouser.com/ProductDetail/595-DLP-7970ABP
   - Board: https://www.ti.com/tool/DLP-7970ABP
   - Chip: https://www.ti.com/product/TRF7970A
+
+
+## Kiwi board
+
+To practice, for POC, and for the lulz, a mini-board is also available: https://oshwlab.com/gentilkiwi/st25tb_kiemul
 
 
 ## Author

@@ -164,7 +164,7 @@ void ST25TB_CARDS_toSlot(uint8_t slotNumber)
     FlashCtl_eraseSegment(((uint8_t *) MyRefSt_Flash) + 512);
     FlashCtl_write32((uint32_t *)               ST25TB_CARDS_CurrentCard,         (uint32_t *)               MyRefSt_Flash,         512 / 4);
     FlashCtl_write32((uint32_t *) (((uint8_t *) ST25TB_CARDS_CurrentCard) + 512), (uint32_t *) (((uint8_t *) MyRefSt_Flash) + 512),  12 / 4);
-#elif defined(__MSP430FR2476__)
+#elif defined(__MSP430FR2476__) || defined(__MSP430FR2475__)
     FRAMCtl_write32((uint32_t *) ST25TB_CARDS_CurrentCard, (uint32_t *) MyRefSt_Flash, sizeof(MyRefSt_Flash) / sizeof(MyRefSt_Flash[0]));
 #else
 #error Target is not supported !

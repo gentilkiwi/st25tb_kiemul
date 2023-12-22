@@ -7,7 +7,7 @@
 #include "driverlib.h"
 #if defined(__MSP430F5529__)
 #include "lp-msp430f5529/lp-msp430f5529.h"
-#elif defined(__MSP430FR2476__)
+#elif defined(__MSP430FR2476__) || defined(__MSP430FR2475__)
 #include "lp-msp430fr2476/lp-msp430fr2476.h"
 #else
 #error Target is not supported !
