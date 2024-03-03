@@ -47,8 +47,8 @@ uint8_t ST25TB_Initiator_Read_Card()
                     BP_IrqSource = BP_IRQ_SOURCE_ST25TB_PROTOCOL_ERR;
                 }
             }
-            ST25TB_Initiator_CMD_Completion();
         }
+        ST25TB_Initiator_CMD_Completion();
     }
 
     return BP_IrqSource;
@@ -171,7 +171,7 @@ uint8_t ST25TB_Initiator_CMD_Initiate(uint8_t *pui8ChipId)
 {
     uint8_t ret;
 
-    ret = ST25TB_Initiator_SendRecv(ST25TB_Initiator_CMD_Initiate_data, sizeof(ST25TB_Initiator_CMD_Initiate_data), 2);
+    ret = ST25TB_Initiator_SendRecv(ST25TB_Initiator_CMD_Initiate_data, sizeof(ST25TB_Initiator_CMD_Initiate_data), 20);
     if (ret == BP_IRQ_SOURCE_NONE)
     {
         if (g_ui8cbFifoBuffer == 1)
@@ -192,7 +192,7 @@ uint8_t ST25TB_Initiator_CMD_Select(const uint8_t ui8ChipId)
 {
     uint8_t ret, ST25TB_Initiator_CMD_Select_data[] = { ST25TB_CMD_SELECT, ui8ChipId };
 
-    ret = ST25TB_Initiator_SendRecv(ST25TB_Initiator_CMD_Select_data, sizeof(ST25TB_Initiator_CMD_Select_data), 2);
+    ret = ST25TB_Initiator_SendRecv(ST25TB_Initiator_CMD_Select_data, sizeof(ST25TB_Initiator_CMD_Select_data), 10);
     if (ret == BP_IRQ_SOURCE_NONE)
     {
         if((g_ui8cbFifoBuffer == 1) && (ui8ChipId == g_ui8FifoBuffer[0]))

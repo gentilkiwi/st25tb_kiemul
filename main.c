@@ -22,7 +22,6 @@ void main()
     GPIO_enableInterrupt(LP_S1);
     GPIO_enableInterrupt(LP_S2);
 
-    //TRF7970A_init(); // Initialized in different modes
     ST25TB_Target_Init();
 
 #if defined(ST25TB_KIEMUL_LED_ANIMATION)
@@ -55,7 +54,6 @@ bool MOD_Emulate_VirtualCard()
     {
         ST25TB_Target_ResetState();
         ST25TB_TRF7970A_Mode(false);
-
         do
         {
             bContinueStateMachine = false;
@@ -94,11 +92,10 @@ bool MOD_Write_VirtualToCard()
     bool bExitMode = false, bNextOrPrev = true;
     uint8_t BP_IrqSource;
 
+    ST25TB_TRF7970A_Mode(true);
     do
     {
-        ST25TB_TRF7970A_Mode(true);
         BP_IrqSource = ST25TB_Initiator_Write_Card(); // avoid dangerous area with ST25TB_DO_NOT_WRITE_DANGEROUS_SECTOR
-        TRF7970A_writeSingle(0, TRF79X0_CHIP_STATUS_CTRL_REG);
 
         if(BP_IrqSource == BP_IRQ_SOURCE_NONE)
         {
@@ -122,6 +119,10 @@ bool MOD_Write_VirtualToCard()
             bExitMode = true;
             bNextOrPrev = true;
         }
+        else
+        {
+            LP_TIMER_delay_Millisecond(100);
+        }
         // other is timer or trf / protocol error, no exit
     }
     while (!bExitMode);
@@ -134,11 +135,10 @@ bool MOD_Read_CardToFlash()
     bool bExitMode = false, bNextOrPrev = true;
     uint8_t BP_IrqSource;
 
+    ST25TB_TRF7970A_Mode(true);
     do
     {
-        ST25TB_TRF7970A_Mode(true);
         BP_IrqSource = ST25TB_Initiator_Read_Card();
-        TRF7970A_writeSingle(0, TRF79X0_CHIP_STATUS_CTRL_REG);
 
         if(BP_IrqSource == BP_IRQ_SOURCE_NONE)
         {
@@ -163,6 +163,10 @@ bool MOD_Read_CardToFlash()
             bExitMode = true;
             bNextOrPrev = true;
         }
+        else
+        {
+            LP_TIMER_delay_Millisecond(100);
+        }
         // other is timer or trf / protocol error, no exit
     }
     while(!bExitMode);
@@ -173,50 +177,45 @@ bool MOD_Read_CardToFlash()
 #if defined(ST25TB_KIEMUL_LED_ANIMATION)
 void LED_Startup()
 {
-    uint8_t i;
+    LED_ON(LP_LED1);
+    LP_TIMER_delay_Millisecond(LED_ACTION_DELAY * 8);
+    LED_OFF(LP_LED1);
+    LP_TIMER_delay_Millisecond(LED_ACTION_DELAY);
 
-    for(i = 0; i < 3; i++)
-    {
-        LED_ON(LP_LED1);
-        LP_TIMER_delay_Millisecond(LED_ACTION_DELAY * 8);
-        LED_OFF(LP_LED1);
-        LP_TIMER_delay_Millisecond(LED_ACTION_DELAY);
+    LED_ON(LP_LED2);
+    LP_TIMER_delay_Millisecond(LED_ACTION_DELAY);
+    LED_OFF(LP_LED2);
+    LP_TIMER_delay_Millisecond(LED_ACTION_DELAY);
 
-        LED_ON(LP_LED2);
-        LP_TIMER_delay_Millisecond(LED_ACTION_DELAY);
-        LED_OFF(LP_LED2);
-        LP_TIMER_delay_Millisecond(LED_ACTION_DELAY);
+    LED_ON(BP_LED4);
+    LP_TIMER_delay_Millisecond(LED_ACTION_DELAY);
+    LED_OFF(BP_LED4);
+    LP_TIMER_delay_Millisecond(LED_ACTION_DELAY);
 
-        LED_ON(BP_LED4);
-        LP_TIMER_delay_Millisecond(LED_ACTION_DELAY);
-        LED_OFF(BP_LED4);
-        LP_TIMER_delay_Millisecond(LED_ACTION_DELAY);
+    LED_ON(BP_LED3);
+    LP_TIMER_delay_Millisecond(LED_ACTION_DELAY);
+    LED_OFF(BP_LED3);
+    LP_TIMER_delay_Millisecond(LED_ACTION_DELAY);
 
-        LED_ON(BP_LED3);
-        LP_TIMER_delay_Millisecond(LED_ACTION_DELAY);
-        LED_OFF(BP_LED3);
-        LP_TIMER_delay_Millisecond(LED_ACTION_DELAY);
+    LED_ON(BP_LED2);
+    LP_TIMER_delay_Millisecond(LED_ACTION_DELAY * 8);
+    LED_OFF(BP_LED2);
+    LP_TIMER_delay_Millisecond(LED_ACTION_DELAY);
 
-        LED_ON(BP_LED2);
-        LP_TIMER_delay_Millisecond(LED_ACTION_DELAY * 8);
-        LED_OFF(BP_LED2);
-        LP_TIMER_delay_Millisecond(LED_ACTION_DELAY);
+    LED_ON(BP_LED3);
+    LP_TIMER_delay_Millisecond(LED_ACTION_DELAY);
+    LED_OFF(BP_LED3);
+    LP_TIMER_delay_Millisecond(LED_ACTION_DELAY);
 
-        LED_ON(BP_LED3);
-        LP_TIMER_delay_Millisecond(LED_ACTION_DELAY);
-        LED_OFF(BP_LED3);
-        LP_TIMER_delay_Millisecond(LED_ACTION_DELAY);
+    LED_ON(BP_LED4);
+    LP_TIMER_delay_Millisecond(LED_ACTION_DELAY);
+    LED_OFF(BP_LED4);
+    LP_TIMER_delay_Millisecond(LED_ACTION_DELAY);
 
-        LED_ON(BP_LED4);
-        LP_TIMER_delay_Millisecond(LED_ACTION_DELAY);
-        LED_OFF(BP_LED4);
-        LP_TIMER_delay_Millisecond(LED_ACTION_DELAY);
-
-        LED_ON(LP_LED2);
-        LP_TIMER_delay_Millisecond(LED_ACTION_DELAY);
-        LED_OFF(LP_LED2);
-        LP_TIMER_delay_Millisecond(LED_ACTION_DELAY);
-    }
+    LED_ON(LP_LED2);
+    LP_TIMER_delay_Millisecond(LED_ACTION_DELAY);
+    LED_OFF(LP_LED2);
+    LP_TIMER_delay_Millisecond(LED_ACTION_DELAY);
 }
 
 void LED_ChangeMode()
