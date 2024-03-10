@@ -92,8 +92,8 @@ uint8_t ST25TB_Initiator_Write_Card()
                     BP_IrqSource = BP_IRQ_SOURCE_ST25TB_PROTOCOL_ERR;
                 }
             }
-            ST25TB_Initiator_CMD_Completion();
         }
+        ST25TB_Initiator_CMD_Completion();
     }
 
     return BP_IrqSource;
