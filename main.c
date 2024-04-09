@@ -12,15 +12,30 @@ const KIEMUL_MODE Modes[] = {
     /*[2]*/ {MOD_Read_CardToFlash,     &Modes[1], &Modes[0], true,  true },
 };
 
+#ifdef CANARD_ENDORMI_FLAVOR
+const KIEMUL_MODE ModesL[] = {
+    /*index  Function                  Previous    Next        GreenL RedL */
+    /*[0]*/ {MOD_Emulate_VirtualCard,  &ModesL[1], &ModesL[1], true,  false},
+    /*[1]*/ {MOD_Write_VirtualToCard,  &ModesL[0], &ModesL[0], false, true },
+};
+#endif
+
 void main()
 {
-    const KIEMUL_MODE *pMode = &Modes[0];
+    const KIEMUL_MODE *pMode = Modes;
 
     LP_init();
     BP_init();
 
     GPIO_enableInterrupt(LP_S1);
     GPIO_enableInterrupt(LP_S2);
+
+#ifdef CANARD_ENDORMI_FLAVOR
+    if(GPIO_getInputPinValue(LP_S1))
+    {
+        pMode = ModesL;
+    }
+#endif
 
     ST25TB_Target_Init();
 
@@ -30,6 +45,8 @@ void main()
 
     while(true)
     {
+        g_button_LP_S1_pressed = false;
+        g_button_LP_S2_pressed = false;
         LED_SET(LP_LED_GREEN, pMode->bLedGreen);
         LED_SET(LP_LED_RED, pMode->bLedRed);
         pMode = pMode->current() ? pMode->next : pMode->prev;

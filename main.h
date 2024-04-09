@@ -8,6 +8,7 @@
 #include "st25tb/st25tb_target.h"
 //#define ST25TB_DO_NOT_WRITE_DANGEROUS_SECTOR
 #include "st25tb/st25tb_initiator.h"
+//#define CANARD_ENDORMI_FLAVOR
 
 #define ST25TB_KIEMUL_LED_ANIMATION
 
