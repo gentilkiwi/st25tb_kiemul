@@ -115,6 +115,21 @@ void TRF7970A_ignoreCmd()
     TRF7970A_directCommand(TRF79X0_RUN_DECODERS_CMD);
 }
 
+#if defined(TRF7970A_IRQ_USE_DUMMY_READ)
+uint8_t TRF7970A_getIrqStatus()
+{
+    uint8_t res;
+
+    BP_TRF_SPI_CS_ENABLE();
+    LP_SPI_sendByte(MK_RS(TRF79X0_IRQ_STATUS_REG));
+    res = LP_SPI_receiveByte();
+    LP_SPI_sendByte(0x00);
+    BP_TRF_SPI_CS_DISABLE();
+
+    return res;
+}
+#endif
+
 uint8_t TRF7970A_waitIrq()
 {
     g_trf7970a_irq_flag = BP_TRF_READ_IRQ(); // because sometimes it's already in IRQ

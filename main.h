@@ -4,6 +4,7 @@
     Licence : https://creativecommons.org/licenses/by/4.0/
 */
 #pragma once
+#define TRF7970A_IRQ_USE_DUMMY_READ
 #include "boards/bp-trf7970a/trf7970a.h"
 #include "st25tb/st25tb_target.h"
 //#define ST25TB_DO_NOT_WRITE_DANGEROUS_SECTOR

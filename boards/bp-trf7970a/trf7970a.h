@@ -30,7 +30,11 @@ uint8_t TRF7970A_waitIrq();
 #define TRF7970A_readCont(pui8Payload, ui8Register, ui8Length)  TRF7970A_readCont_internal(pui8Payload, MK_RC(ui8Register), ui8Length)
 #define TRF7970A_writeCont(pui8Payload, ui8Register, ui8Length) TRF7970A_writeCont_internal(pui8Payload, MK_WC(ui8Register), ui8Length)
 
+#if !defined(TRF7970A_IRQ_USE_DUMMY_READ)
 #define TRF7970A_getIrqStatus()     TRF7970A_readSingle(TRF79X0_IRQ_STATUS_REG)
+#else
+uint8_t TRF7970A_getIrqStatus();
+#endif
 #define TRF7970A_clearIrqStatus()   TRF7970A_getIrqStatus()
 
 //#define TRF79X0_SPI_FREQ    4000000
