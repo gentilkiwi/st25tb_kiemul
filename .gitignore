@@ -1,6 +1,8 @@
 .ccsproject
 .launches/
 .settings/
+kiemul/private_*
+kiemul/*.data
 targetConfigs/
 Release*/
 Debug*/

@@ -1,0 +1,62 @@
+name: Simple build
+on: [workflow_dispatch, push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      COMPILER_CGT_PATH: ${{github.workspace}}/ti-cgt-msp430_21.6.1.LTS
+      CCS_COMPONENTS_PATH: ${{github.workspace}}/msp430_ccs_files
+    steps:
+
+    - name: Checkout project
+      uses: actions/checkout@v4
+      with:
+        path: ${{github.event.repository.name}}
+
+    - name: Checkout Texas Instruments MSP430 Code Composer Studio files
+      uses: actions/checkout@v4
+      with:
+        repository: gentilkiwi/msp430_ccs_files
+        path: msp430_ccs_files
+    
+    - name: Install Texas Instruments Code Generation Tools for MSP430 (21.6.1 LTS)
+      run: |
+        wget https://dr-download.ti.com/software-development/ide-configuration-compiler-or-debugger/MD-p4jWEYpR8n/21.6.1.LTS/ti_cgt_msp430_21.6.1.LTS_linux-x64_installer.bin
+        chmod +x *_linux-x64_installer.bin
+        ./*_linux-x64_installer.bin --mode unattended --prefix ${{github.workspace}}
+        rm *_linux-x64_installer.bin
+        echo "$COMPILER_CGT_PATH/bin" >> "$GITHUB_PATH"
+    
+    - name: Generating RTS library (libc.a)
+      working-directory: ${{env.COMPILER_CGT_PATH}}/lib
+      run: ./mklib --parallel=$(nproc) --pattern=rts430x_sc_sd_eabi.lib
+
+    - name: Build project
+      working-directory: ${{github.event.repository.name}}
+      run: |
+        LINKER_CMD=lnk_msp430fr2476.cmd # project has its own, otherwise $CCS_COMPONENTS_PATH/include/lnk_msp430fr2476.cmd
+        C_FILES=( $(find . -name '*.c') )
+        cl430 --verbose --parallel=$(nproc) \
+          --silicon_version=mspx --code_model=small --data_model=small --silicon_errata=CPU21 --silicon_errata=CPU22 --silicon_errata=CPU40 \
+          --opt_level=4 --opt_for_speed=3 --use_hw_mpy=F5 --advice:hw_config=all \
+          --printf_support=minimal --diag_warning=225 --diag_wrap=off --display_error_number --emit_warnings_as_errors \
+          --include_path=$COMPILER_CGT_PATH/include --include_path=$CCS_COMPONENTS_PATH/include --include_path=. \
+          --define=__MSP430FR2476__ --define=_FRWP_ENABLE --define=_INFO_FRWP_ENABLE \
+          ${C_FILES[*]} \
+          --run_linker \
+          --heap_size=160 --stack_size=160 --cinit_hold_wdt=on --priority --reread_libs --warn_sections --rom_model \
+          --search_path=$COMPILER_CGT_PATH/lib --search_path=$CCS_COMPONENTS_PATH/lib \
+          --output_file=${{github.event.repository.name}}.out \
+          --libraryFR2xx/frwp_init.a --library=libc.a $LINKER_CMD
+        hex430 --memwidth=8 --romwidth=8 --diag_wrap=off --intel --outfile=${{github.event.repository.name}}.hex ${{github.event.repository.name}}.out
+        ls -al *.out *.hex
+      
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{github.event.repository.name}}
+        compression-level: 9
+        path: |
+          ${{github.event.repository.name}}/*.out
+          ${{github.event.repository.name}}/*.hex

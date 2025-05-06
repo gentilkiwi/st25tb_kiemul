@@ -7,30 +7,27 @@ This is the support project of `ST25TB series NFC tags for fun in French public 
 
 ## Project
 
-`st25tb_kiemul` project is ready for Texas Intruments Code Composer Studio (CCS) IDE 12+, https://www.ti.com/tool/CCSTUDIO
-
-You can use the local IDE or the online one (CCS Cloud). When using online IDE, do not forget to delete additionnal `.cmd` at the root of the project after the initial import ; they are conflicting with **specific** embeded ones in the project.
+`st25tb_kiemul` project is ready for Texas Intruments Code Composer Studio (CCS) IDE 12+, https://www.ti.com/tool/CCSTUDIO. You can use the local IDE or the online one (CCS Cloud).
 
 You can reduce the code base but, at this time, the full project (emulator/writer/learner with led animations) needs (only) < 6 kilobytes for program and < 700 bytes of memory.
 
 
 ## Supported configurations
 
-- `MSP-EXP430F5529LP` + `DLP-7970ABP` with configuration `Release - lp-msp430f5529` - MSP @ 25 MHz, external battery needed
 - `LP-MSP430FR2476` + `DLP-7970ABP` with configuration `Release - lp-msp430fr2476` - MSP @ 16 MHz, CR2032 battery compatible!
 - `*MSP430*` + `DLP-7970ABP` with new configuration to create (feel free to adapt :))
 
+Note: `MSP-EXP430F5529LP` + `DLP-7970ABP` is no longer supported by default. MSP430 devices with FRAM and a 16 MHz system clock are now preferred due to their simplicity and better compatibility.
 
 ## Flash
 
 You can program your board from the IDE itself, but `.hex` files produced/downloaded can also be used with `MSP430Flasher` (https://www.ti.com/tool/MSP430-FLASHER) or `UniFlash` (https://www.ti.com/tool/UNIFLASH).
 
-No `MSP-FET` required when using LaunchPad cards, as they embed an `eZ-FET lite` emulator.
+No `MSP-FET` required when using LaunchPad cards, as they embed an `eZ-FET lite` emulator. On other configurations you may need [`MSP-FET`](https://www.ti.com/tool/MSP-FET) to flash the board, but you can also use the embedded `eZ-FET lite` from another Launchpad card you already have :)
 
 ### Examples:
 
 - `MSP430Flasher -i TIUSB -n MSP430FR2476 -z [VCC,RESET] -e ERASE_ALL -v -w st25tb_kiemul-MSP430FR2476.hex`
-- `MSP430Flasher -i TIUSB -n MSP430F5529 -z [VCC,RESET] -e ERASE_ALL -v -w st25tb_kiemul-MSP430F5529.hex`
 
 #### Notes:
 - replace `-i TIUSB` by `-i COMnumber` when dealing with multiple boards connected at the same time ;
@@ -38,6 +35,9 @@ No `MSP-FET` required when using LaunchPad cards, as they embed an `eZ-FET lite`
 
 
 ## How to use it?
+
+TODO - Wiki ;)
+
 _basics_
 
 At startup/reset, the content of the emulator card is loaded from the flash memory. If no cards were previously learned, a default one with the UID: `d00233aabbccddee` is loaded.
@@ -91,9 +91,6 @@ Leds on the `DLP-7970ABP` board are used for status:
 
 ## Hardware references
 
-- `MSP-EXP430F5529LP` - https://www.mouser.com/ProductDetail/595-MSPEXP430F5529LP
-  - Board: https://www.ti.com/tool/MSP-EXP430F5529LP
-  - Chip: https://www.ti.com/product/MSP430F5529
 - `LP-MSP430FR2476` - https://www.mouser.com/ProductDetail/595-LP-MSP430FR2476
   - Board: https://www.ti.com/tool/LP-MSP430FR2476
   - Chip: https://www.ti.com/product/MSP430FR2476
