@@ -6,4 +6,6 @@
 #pragma once
 #include "../modes.h"
 
+#define MODE_EMULATE_SW2_SAVE
+
 void MODE_emulate();

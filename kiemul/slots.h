@@ -51,9 +51,9 @@
 
 extern uint8_t SLOTS_ST25TB_Current[SLOTS_ST25TB_SECTORS_INTERNAL][4];
 
-void SLOTS_Change(uint8_t index);
-void SLOTS_Load(uint8_t index);
-void SLOTS_Save(uint8_t index);
+bool SLOTS_Change(uint8_t index);
+bool SLOTS_Load(uint8_t index);
+bool SLOTS_Save(uint8_t index);
 
 #define SLOTS_FIND_INVALID_INDEX    0xff
 uint8_t SLOTS_FindByUID(uint8_t pui8Data[8]); // ret == SLOTS_FIND_INVALID_INDEX -> not found

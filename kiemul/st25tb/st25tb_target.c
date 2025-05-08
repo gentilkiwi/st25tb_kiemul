@@ -86,9 +86,42 @@ bool ST25TB_Target_ResponseTo()
             }
             else if(idx == 0xfe)
             {
-                SLOTS_Save_Current(); // maybe move at the end for Flash operation ? (slow, even if ret is not really needed)
-                pcbData = ST25TB_TARGET_KIWI_SPECIAL_RETCODE_OK;
-                cbData = sizeof(ST25TB_TARGET_KIWI_SPECIAL_RETCODE_OK);
+                switch(g_ui8_ST25TB_Buffer[2])
+                {
+                case 0xff: // Save to slot
+                    idx = (g_ui8_ST25TB_Buffer[3] == 0xff) ? FlashStoredData.CurrentSlot : g_ui8_ST25TB_Buffer[3];
+                    pcbData = SLOTS_Save(idx) ? ST25TB_TARGET_KIWI_SPECIAL_RETCODE_OK : ST25TB_TARGET_KIWI_SPECIAL_RETCODE_KO;
+                    cbData = 4;
+                    break;
+
+                case 0xfe: // Change slot (or get the current with 0xff)
+                    if(g_ui8_ST25TB_Buffer[3] == 0xff) // only get the current, no reload
+                    {
+                        idx = FlashStoredData.CurrentSlot;
+                        pcbData = &idx;
+                        cbData = 1;
+                    }
+                    else // real SLOTS_Change
+                    {
+                        idx = g_ui8_ST25TB_Buffer[3];
+                        if(SLOTS_Change(idx))
+                        {
+                            pcbData = &idx;
+                            cbData = 1;
+                        }
+                        else
+                        {
+                            pcbData = ST25TB_TARGET_KIWI_SPECIAL_RETCODE_KO;
+                            cbData = 4;
+                        }
+                    }
+                    break;
+
+                case 0x00: // Restart / Reset
+                    WDTCTL = 0xcafe;
+                    break;
+                }
+
                 delay = ST25TB_TARGET_DELAY_US_GLOBAL;
             }
         }

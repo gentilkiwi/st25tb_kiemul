@@ -30,6 +30,15 @@ void MODE_emulate()
                     bContinueStateMachine = ST25TB_Target_ResponseTo();
                 }
             }
+#if defined(MODE_EMULATE_SW2_SAVE)
+            else if((BP_IrqSource & IRQ_SOURCE_SW2) && FlashStoredData.CurrentSlot) // Slot #0 is forbidden
+            {
+                LED_ON(LED_INDEX_STATUS_BLUE);
+                SLOTS_Save_Current();
+                TIMER_delay_Milliseconds(500);
+                LED_OFF(LED_INDEX_STATUS_BLUE);
+            }
+#endif
         }
         while (bContinueStateMachine);
     }

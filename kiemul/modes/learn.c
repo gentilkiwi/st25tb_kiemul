@@ -42,17 +42,6 @@ void MODE_learn()
                 bNeedToReload = true;
             }
         }
-
-        if(BP_IrqSource & IRQ_SOURCE_SW2)
-        {
-            index++;
-            if(index >= SLOTS_ST25TB_COUNT)
-            {
-                index = 0;
-            }
-            SLOTS_Change(index);
-            bNeedToReload = false;
-        }
     }
     while (!(BP_IrqSource & IRQ_SOURCE_SW1));
 
