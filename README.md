@@ -4,6 +4,7 @@ ST25TB / SRx NFC Emulator / Initiator based on TI TRF7970A with MSP430
 
 This is the support project of `ST25TB series NFC tags for fun in French public transports` ([ST25TB_transport.pdf](ST25TB_transport.pdf))
 
+> **Note:** This project is **superseded** by `MSP430` [`st25tb_kameleon`](https://github.com/gentilkiwi/st25tb_kameleon) and its `RP2040` equivalent [`st25tb_kameleon_piko`](https://github.com/gentilkiwi/st25tb_kameleon_piko), both of which are more user-friendly.
 
 ## Project
 
@@ -36,44 +37,7 @@ No `MSP-FET` required when using LaunchPad cards, as they embed an `eZ-FET lite`
 
 ## How to use it?
 
-TODO - Wiki ;)
-
-_basics_
-
-At startup/reset, the content of the emulator card is loaded from the flash memory. If no cards were previously learned, a default one with the UID: `d00233aabbccddee` is loaded.
-
-Left and Right buttons are used to cycle between modes (Emulator -> Writer -> Learn)
-
-### 🟢 ⚫ Emulator mode - _(default)_
-_GREEN led only_
-
-In this mode, it reacts like a normal ST25TB-AT cards, with few differences:
-- Sectors `0x05` and `0x06` are not limited to decrement ;
-- Sector `0xff` (system area / internal is `0x80`) is not used to lock sectors/OTP ;
-- Sectors `0x81` and `0x82` can be used to read **and write** UID ;
-- Any writing operation to sector `0xfe` will write current emulated card into flash memory.
-
-_basically, it reacts like a memory card without limitation_
-
-### ⚫ 🔴 Writer mode
-_RED led only_
-
-In this mode, it will try to write the emulator content back to the original card.
-
-Leds on the `DLP-7970ABP` board are used for status:
-- 🔵 & 🟢 Card successfully writed (and confirmed) 
-- 🔴 An error occured (not the good UID or write then read error)
-
-
-### 🟢 🔴 Learn mode - _dangerous!_
-_GREEN & RED led_
-
-In this mode, it will read an original card into emulator, then save it to the flash memory.
-
-Leds on the `DLP-7970ABP` board are used for status:
-- 🔵 Card successfully readed (and confirmed) 
-- 🔴 An error occured (try to move the card, no need to stick it to the antenna)
-- 🟢 Card successfully writed to the flash memory
+Wiki: https://github.com/gentilkiwi/st25tb_kiemul/wiki
 
 
 ## Remarks
@@ -104,9 +68,10 @@ Leds on the `DLP-7970ABP` board are used for status:
 To practice, for POC, and for the lulz, a mini-board is also available: https://oshwlab.com/gentilkiwi/st25tb_kiemul
 
 
-## Author
+## Authors
 
-Benjamin DELPY `gentilkiwi`, you can contact me on Twitter ( @gentilkiwi ) or by mail ( benjamin [at] gentilkiwi.com )
+Benjamin DELPY 🥝 gentilkiwi, you can contact me on Twitter ( @gentilkiwi ) or by mail ( benjamin [at] gentilkiwi.com )  
+Tear off part is 99% the (crazy) work of @SecLabz, see his repository https://github.com/SecLabz/near-field-chaos for more informations, and functionnalities! ❤️
 
 This is a personal development, please respect its philosophy and don't use it for bad things!
 
