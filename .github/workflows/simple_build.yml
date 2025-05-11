@@ -50,6 +50,7 @@ jobs:
           --output_file=${{github.event.repository.name}}.out \
           --libraryFR2xx/frwp_init.a --library=libc.a $LINKER_CMD
         hex430 --memwidth=8 --romwidth=8 --diag_wrap=off --intel --outfile=${{github.event.repository.name}}.hex ${{github.event.repository.name}}.out
+        strip430 --postlink ${{github.event.repository.name}}.out
         ls -al *.out *.hex
       
     - name: Upload artifacts
