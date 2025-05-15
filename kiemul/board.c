@@ -48,6 +48,10 @@ void BOARD_init()
      * P4.0 & P2.3 pullup selected for SW1 & SW2
      * P1.3 high for SPI_CS
      * ... and all other to 0 (LEDs, etc.)
+     * Pull-ups not strictly needed for SW1 & SW2:
+     * - st25tb_kiemul board: resistors on board for that ;
+     * - LP-MSP430FR2476: R9 and R10 are intended for that (per official schematics)
+     *   - Unfortunately, they are not actually populated on the official board
      */
     P1OUT = BIT3;
     P2OUT = BIT3;
@@ -58,6 +62,10 @@ void BOARD_init()
 
     /*
      * P4.0 & P2.3 pullup or pulldown enabled for SW1 & SW2
+     * Pull-ups not strictly needed for SW1 & SW2:
+     * - st25tb_kiemul board: resistors on board for that ;
+     * - LP-MSP430FR2476: R9 and R10 are intended for that (per official schematics)
+     *   - Unfortunately, they are not actually populated on the official board
      */
     P2REN = BIT3;
     P4REN = BIT0;
