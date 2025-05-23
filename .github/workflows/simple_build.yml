@@ -1,10 +1,12 @@
-name: Simple build
+name: MSP430 build
 on: [workflow_dispatch, push, pull_request]
 
 jobs:
   build:
     runs-on: ubuntu-latest
     env:
+      PROJECT_MCU: MSP430FR2476
+      PROJECT_NAME: ${{github.event.repository.name}}
       COMPILER_CGT_PATH: ${{github.workspace}}/ti-cgt-msp430_21.6.1.LTS
       CCS_COMPONENTS_PATH: ${{github.workspace}}/msp430_ccs_files
     steps:
@@ -33,24 +35,24 @@ jobs:
       run: ./mklib --parallel=$(nproc) --pattern=rts430x_sc_sd_eabi.lib
 
     - name: Build project
-      working-directory: ${{github.event.repository.name}}
+      working-directory: $PROJECT_NAME
       run: |
-        LINKER_CMD=lnk_msp430fr2476.cmd # project has its own, otherwise $CCS_COMPONENTS_PATH/include/lnk_msp430fr2476.cmd
+        LINKER_CMD=lnk_msp430*.cmd # project has its own, otherwise $CCS_COMPONENTS_PATH/include/lnk_msp430*.cmd
         C_FILES=( $(find . -name '*.c') )
         cl430 --verbose --parallel=$(nproc) \
           --silicon_version=mspx --code_model=small --data_model=small --silicon_errata=CPU21 --silicon_errata=CPU22 --silicon_errata=CPU40 \
           --opt_level=4 --opt_for_speed=3 --use_hw_mpy=F5 --advice:hw_config=all \
           --printf_support=minimal --diag_warning=225 --diag_wrap=off --display_error_number --emit_warnings_as_errors \
           --include_path=$COMPILER_CGT_PATH/include --include_path=$CCS_COMPONENTS_PATH/include --include_path=. \
-          --define=__MSP430FR2476__ --define=_FRWP_ENABLE --define=_INFO_FRWP_ENABLE \
+          --define=__$PROJECT_MCU__ --define=_FRWP_ENABLE --define=_INFO_FRWP_ENABLE \
           ${C_FILES[*]} \
           --run_linker \
           --heap_size=160 --stack_size=160 --cinit_hold_wdt=on --priority --reread_libs --warn_sections --rom_model \
           --search_path=$COMPILER_CGT_PATH/lib --search_path=$CCS_COMPONENTS_PATH/lib \
-          --output_file=${{github.event.repository.name}}.out \
+          --output_file=$PROJECT_NAME.out \
           --library=FR2xx/frwp_init.a --library=libc.a $LINKER_CMD
-        hex430 --memwidth=8 --romwidth=8 --diag_wrap=off --intel --outfile=${{github.event.repository.name}}.hex ${{github.event.repository.name}}.out
-        strip430 --postlink ${{github.event.repository.name}}.out
+        hex430 --memwidth=8 --romwidth=8 --diag_wrap=off --intel --outfile=$PROJECT_NAME.hex $PROJECT_NAME.out
+        strip430 --postlink $PROJECT_NAME.out
         ls -al *.out *.hex
       
     - name: Upload artifacts
@@ -59,5 +61,5 @@ jobs:
         name: ${{github.event.repository.name}}
         compression-level: 9
         path: |
-          ${{github.event.repository.name}}/*.out
-          ${{github.event.repository.name}}/*.hex
+          $PROJECT_NAME/*.out
+          $PROJECT_NAME/*.hex
