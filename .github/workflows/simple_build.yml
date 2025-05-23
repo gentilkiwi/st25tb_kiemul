@@ -32,10 +32,9 @@ jobs:
     - name: Cache Lib test
       id: cache-lib
       uses: actions/cache@v4
-      working-directory: ${{env.COMPILER_CGT_PATH}}/lib
       with:
-        path: ./rts430x_sc_sd_eabi.lib
-        key: rts-${{ runner.os }}-${{ hashFiles('rts430x_sc_sd_eabi.lib') }}
+        path: ${{env.COMPILER_CGT_PATH}}/lib/rts430x_sc_sd_eabi.lib
+        key: rts-${{ runner.os }}-${{ hashFiles('${{env.COMPILER_CGT_PATH}}/lib/rts430x_sc_sd_eabi.lib') }}
         restore-keys: |
           rts-${{ runner.os }}-
     
