@@ -34,7 +34,7 @@ jobs:
       uses: actions/cache@v4
       with:
         path: ${{env.COMPILER_CGT_PATH}}/lib/rts430x_sc_sd_eabi.lib
-        key: rts-${{ hashFiles('/ti-cgt-msp430_21.6.1.LTS/lib/rts430x_sc_sd_eabi.lib') }}-end
+        key: rts-${{ hashFiles(format('{0}{1}', env.COMPILER_CGT_PATH, '/lib/*.lib')) }}
         restore-keys: |
           rts-
     
