@@ -48,7 +48,7 @@ jobs:
           --heap_size=160 --stack_size=160 --cinit_hold_wdt=on --priority --reread_libs --warn_sections --rom_model \
           --search_path=$COMPILER_CGT_PATH/lib --search_path=$CCS_COMPONENTS_PATH/lib \
           --output_file=${{github.event.repository.name}}.out \
-          --libraryFR2xx/frwp_init.a --library=libc.a $LINKER_CMD
+          --library=FR2xx/frwp_init.a --library=libc.a $LINKER_CMD
         hex430 --memwidth=8 --romwidth=8 --diag_wrap=off --intel --outfile=${{github.event.repository.name}}.hex ${{github.event.repository.name}}.out
         strip430 --postlink ${{github.event.repository.name}}.out
         ls -al *.out *.hex
