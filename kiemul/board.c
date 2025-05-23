@@ -5,7 +5,7 @@
 */
 #include "board.h"
 
-volatile bool g_irq_TA0, g_irq_SW1, g_irq_SW2, g_irq_TRF;
+volatile uint8_t IRQ_Global = IRQ_SOURCE_NONE;
 
 void BOARD_init()
 {
@@ -112,10 +112,10 @@ uint16_t RAND_Generate()
 void TIMER_delay_Milliseconds_internal(uint16_t n_unit_ms) // max is UINT16_MAX ( 1985 ms * 33 = ~ UINT16_MAX )
 {
     TA0CCR0 = n_unit_ms;
-    g_irq_TA0 = false;
+    IRQ_Global &= ~IRQ_SOURCE_TIMER;
     TA0CTL = TASSEL__ACLK | ID__1 | MC__UP | TACLR | TAIE_1 | TAIFG_0;
 
-    while(!g_irq_TA0)
+    while(!(IRQ_Global & IRQ_SOURCE_TIMER))
     {
         __low_power_mode_0();
     }
@@ -125,195 +125,57 @@ void TIMER_delay_Milliseconds_internal(uint16_t n_unit_ms) // max is UINT16_MAX 
 void TIMER_start_Milliseconds_internal(uint16_t n_unit_ms) // max is UINT16_MAX ( 1985 ms * 33 = ~ UINT16_MAX )
 {
     TA0CCR0 = n_unit_ms;
-    g_irq_TA0 = false;
+    IRQ_Global &= ~IRQ_SOURCE_TIMER;
     TA0CTL = TASSEL__ACLK | ID__1 | MC__UP | TACLR | TAIE_1 | TAIFG_0;
 }
 
 void TIMER_delay_Microseconds_internal(uint16_t n_unit_us) // max is UINT16_MAX ( 32767 us * 2 = ~ UINT16_MAX )
 {
     TA0CCR0 = n_unit_us;
-    g_irq_TA0 = false;
+    IRQ_Global &= ~IRQ_SOURCE_TIMER;
     TA0CTL = TASSEL__SMCLK | ID__8 | MC__UP | TACLR | TAIE_1 | TAIFG_0;
 
-    while(!g_irq_TA0)
+    while(!(IRQ_Global & IRQ_SOURCE_TIMER))
     {
         __low_power_mode_0();
     }
     TIMER_stop();
 }
 
-/*
- * TODO: Can be interesting to see a generic function with a bitmask of what is wanted instead of multiple functions
- */
-uint8_t IRQ_Wait_for_SW1()
+uint8_t IRQ_Wait_for(uint8_t IRQWanted, uint8_t *pTRF7970A_irqStatus, uint16_t timeout_ms)
 {
-    g_irq_SW1 = false;
-    while(!g_irq_SW1)
+    uint8_t ret;
+
+    if(IRQWanted & IRQ_SOURCE_SW1)
     {
-       __low_power_mode_0();
-    }
-    g_irq_SW1 = false;
-
-    return IRQ_SOURCE_SW1;
-}
-
-uint8_t IRQ_Wait_for_SW1_or_SW2()
-{
-    uint8_t ret = IRQ_SOURCE_NONE;
-
-    g_irq_SW1 = false;
-    g_irq_SW2 = false;
-    while(!g_irq_SW1 && !g_irq_SW2)
-    {
-       __low_power_mode_0();
+        IRQ_Global &= ~IRQ_SOURCE_SW1;
     }
 
-    if(g_irq_SW1)
+    if(IRQWanted & IRQ_SOURCE_SW2)
     {
-        g_irq_SW1 = false;
-        ret |= IRQ_SOURCE_SW1;
+        IRQ_Global &= ~IRQ_SOURCE_SW2;
     }
 
-    if(g_irq_SW2)
+    if(IRQWanted & IRQ_SOURCE_TIMER)
     {
-        g_irq_SW2 = false;
-        ret |= IRQ_SOURCE_SW2;
+        TIMER_start_Milliseconds(timeout_ms);
     }
 
-    return ret;
-}
-
-uint8_t IRQ_Wait_for_SW1_or_SW2_or_TRF(uint8_t *pTRF7970A_irqStatus)
-{
-    uint8_t ret = IRQ_SOURCE_NONE;
-
-    g_irq_SW1 = false;
-    g_irq_SW2 = false;
-
-    while(!g_irq_TRF && !g_irq_SW1 && !g_irq_SW2)
-    {
-        __low_power_mode_0(); //__no_operation(); -- in case of problems to catch some IRQ :( hopefully routine is only used in emulation
-    }
-
-    if(g_irq_TRF)
-    {
-        g_irq_TRF = false;
-        *pTRF7970A_irqStatus = TRF7970A_getIrqStatus();
-        ret |= IRQ_SOURCE_TRF7970A;
-    }
-
-    if(g_irq_SW1)
-    {
-        g_irq_SW1 = false;
-        ret |= IRQ_SOURCE_SW1;
-    }
-
-    if(g_irq_SW2)
-    {
-        g_irq_SW2 = false;
-        ret |= IRQ_SOURCE_SW2;
-    }
-
-    return ret;
-}
-
-uint8_t IRQ_Wait_for_SW1_or_TRF(uint8_t *pTRF7970A_irqStatus)
-{
-    uint8_t ret = IRQ_SOURCE_NONE;
-
-    g_irq_SW1 = false;
-
-    while(!g_irq_TRF && !g_irq_SW1)
+    while(!(IRQWanted & IRQ_Global))
     {
         __low_power_mode_0();
     }
+    ret = IRQWanted & IRQ_Global;
 
-    if(g_irq_TRF)
+    if(IRQWanted & IRQ_SOURCE_TRF7970A)
     {
-        g_irq_TRF = false;
+        IRQ_Global &= ~IRQ_SOURCE_TRF7970A;
         *pTRF7970A_irqStatus = TRF7970A_getIrqStatus();
-        ret |= IRQ_SOURCE_TRF7970A;
     }
 
-    if(g_irq_SW1)
+    if(IRQWanted & IRQ_SOURCE_TIMER)
     {
-        g_irq_SW1 = false;
-        ret |= IRQ_SOURCE_SW1;
-    }
-
-    return ret;
-}
-
-uint8_t IRQ_Wait_for_SW1_or_SW2_or_Timeout(uint16_t timeout_ms)
-{
-    uint8_t ret = IRQ_SOURCE_NONE;
-
-    g_irq_SW1 = false;
-    g_irq_SW2 = false;
-    TIMER_start_Milliseconds(timeout_ms);
-
-    while(!g_irq_TA0 && !g_irq_SW1 && !g_irq_SW2)
-    {
-        __low_power_mode_0();
-    }
-    TIMER_stop();
-
-    if(g_irq_SW1)
-    {
-        g_irq_SW1 = false;
-        ret |= IRQ_SOURCE_SW1;
-    }
-
-    if(g_irq_SW2)
-    {
-        g_irq_SW2 = false;
-        ret |= IRQ_SOURCE_SW2;
-    }
-
-    if(g_irq_TA0)
-    {
-        ret |= IRQ_SOURCE_TIMER;
-    }
-
-    return ret;
-}
-
-uint8_t IRQ_Wait_for_SW1_or_SW2_or_TRF_or_Timeout(uint8_t *pTRF7970A_irqStatus, uint16_t timeout_ms)
-{
-    uint8_t ret = IRQ_SOURCE_NONE;
-
-    g_irq_SW1 = false;
-    g_irq_SW2 = false;
-    TIMER_start_Milliseconds(timeout_ms);
-
-    while(!g_irq_TRF && !g_irq_TA0 && !g_irq_SW1 && !g_irq_SW2)
-    {
-        __low_power_mode_0();
-    }
-    TIMER_stop();
-
-    if(g_irq_TRF)
-    {
-        g_irq_TRF = false;
-        *pTRF7970A_irqStatus = TRF7970A_getIrqStatus();
-        ret |= IRQ_SOURCE_TRF7970A;
-    }
-
-    if(g_irq_SW1)
-    {
-        g_irq_SW1 = false;
-        ret |= IRQ_SOURCE_SW1;
-    }
-
-    if(g_irq_SW2)
-    {
-        g_irq_SW2 = false;
-        ret |= IRQ_SOURCE_SW2;
-    }
-
-    if(g_irq_TA0)
-    {
-        ret |= IRQ_SOURCE_TIMER;
+        TIMER_stop();
     }
 
     return ret;
@@ -327,11 +189,11 @@ __interrupt void Port2_ISR(void)
 {
     if(P2IV == P2IV_P2IFG1)
     {
-        g_irq_TRF = true;
+        IRQ_Global |= IRQ_SOURCE_TRF7970A;
     }
     else
     {
-        g_irq_SW2 = true;
+        IRQ_Global |= IRQ_SOURCE_SW2;
     }
     __low_power_mode_off_on_exit();
 }
@@ -344,7 +206,7 @@ __interrupt void Port2_ISR(void)
 __interrupt void Port4_ISR(void)
 {
     P4IFG = 0; // P4IFG &= ~BIT2;
-    g_irq_SW1 = true;
+    IRQ_Global |= IRQ_SOURCE_SW1;
     __low_power_mode_off_on_exit();
 }
 
@@ -355,6 +217,6 @@ __interrupt void Port4_ISR(void)
 __interrupt void TIMERA0_ISR (void)
 {
     TA0CTL &= ~TAIFG;
-    g_irq_TA0 = true;
+    IRQ_Global |= IRQ_SOURCE_TIMER;
     __low_power_mode_off_on_exit();
 }

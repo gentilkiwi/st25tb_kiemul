@@ -14,7 +14,7 @@
 #include "leds.h"
 #include "trf7970a.h"
 
-extern volatile bool g_irq_TA0, g_irq_SW1, g_irq_SW2, g_irq_TRF;
+extern volatile uint8_t IRQ_Global;
 
 void BOARD_init();
 
@@ -36,12 +36,7 @@ void TIMER_delay_Microseconds_internal(uint16_t n_unit_us); // max is UINT16_MAX
 #define IRQ_SOURCE_TIMER                0x08
 #define IRQ_SOURCE_ST25TB_PROTOCOL_ERR  0x10
 
-uint8_t IRQ_Wait_for_SW1();
-uint8_t IRQ_Wait_for_SW1_or_SW2();
-uint8_t IRQ_Wait_for_SW1_or_SW2_or_TRF(uint8_t *pTRF7970A_irqStatus);
-uint8_t IRQ_Wait_for_SW1_or_TRF(uint8_t *pTRF7970A_irqStatus);
-uint8_t IRQ_Wait_for_SW1_or_SW2_or_Timeout(uint16_t timeout_ms);
-uint8_t IRQ_Wait_for_SW1_or_SW2_or_TRF_or_Timeout(uint8_t *pTRF7970A_irqStatus, uint16_t timeout_ms);
+uint8_t IRQ_Wait_for(uint8_t IRQWanted, uint8_t *pTRF7970A_irqStatus, uint16_t timeout_ms);
 
 #define count_of(a) (sizeof(a)/sizeof((a)[0]))
 

@@ -137,7 +137,7 @@ uint8_t ST25TB_Initiator_SendRecv(const uint8_t *pui8Payload, const uint8_t ui8L
     uint8_t ret, TRF7970A_irqStatus;
     if(ST25TB_Send(pui8Payload, ui8Length))
     {
-        ret = IRQ_Wait_for_SW1_or_SW2_or_TRF_or_Timeout(&TRF7970A_irqStatus, timeout_ms);
+        ret = IRQ_Wait_for(IRQ_SOURCE_SW1 | IRQ_SOURCE_SW2 | IRQ_SOURCE_TRF7970A | IRQ_SOURCE_TIMER, &TRF7970A_irqStatus, timeout_ms);
         if(!(ret & (IRQ_SOURCE_SW1 | IRQ_SOURCE_SW2 | IRQ_SOURCE_TIMER)))
         {
             if (ret & IRQ_SOURCE_TRF7970A)

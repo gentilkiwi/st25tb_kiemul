@@ -18,7 +18,7 @@ void MODE_emulate()
         do
         {
             bContinueStateMachine = false;
-            BP_IrqSource = IRQ_Wait_for_SW1_or_SW2_or_TRF(&TRF7970A_irqStatus);
+            BP_IrqSource = IRQ_Wait_for(IRQ_SOURCE_SW1 | IRQ_SOURCE_SW2 | IRQ_SOURCE_TRF7970A, &TRF7970A_irqStatus, 0);
             if(BP_IrqSource & IRQ_SOURCE_SW1)
             {
                 bExitMode = true;

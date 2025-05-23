@@ -41,8 +41,7 @@ void main(void)
 
     while(true)
     {
-        g_irq_SW1 = false;
-        g_irq_SW2 = false;
+        IRQ_Global &= ~(IRQ_SOURCE_SW1 | IRQ_SOURCE_SW2);
         LEDS_MODES_Bitmask(cMode->ledsModesBitmask);
         LEDS_STATUS_Bitmask(0);
 

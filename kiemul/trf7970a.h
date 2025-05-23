@@ -13,7 +13,7 @@
 #define TRF_CS_DISABLE()    do{TRF_SPI_WAIT_BUSY(); TRF_CS_PORT |= TRF_CS_BIT;} while(0)
 
 #define TRF_IRQ_READ()      (TRF_IRQ_PORT & TRF_IRQ_BIT)
-#define TRF_IRQ_ENABLE()    do{TRF_IRQ_IFG &= ~TRF_IRQ_BIT; g_irq_TRF = TRF_IRQ_READ(); TRF_IRQ_IE |= TRF_IRQ_BIT;} while(0)
+#define TRF_IRQ_ENABLE()    do{TRF_IRQ_IFG &= ~TRF_IRQ_BIT; TRF_IRQ_READ() ? (IRQ_Global |= IRQ_SOURCE_TRF7970A) : (IRQ_Global &= ~IRQ_SOURCE_TRF7970A) ; TRF_IRQ_IE |= TRF_IRQ_BIT;} while(0)
 #define TRF_IRQ_DISABLE()   TRF_IRQ_IE &= ~TRF_IRQ_BIT
 #define TRF_IRQ_CLEAR()     TRF_IRQ_IFG &= ~TRF_IRQ_BIT
 

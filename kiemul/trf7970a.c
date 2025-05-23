@@ -101,11 +101,11 @@ void TRF7970A_SPI_Write_Packet_TYPED(const uint8_t *pcbData, uint8_t cbData, con
 
 uint8_t TRF7970A_SPI_waitIrq()
 {
-    while(!g_irq_TRF)
+    while(!(IRQ_Global & IRQ_SOURCE_TRF7970A))
     {
         __low_power_mode_0();
     }
-    g_irq_TRF = false;
+    IRQ_Global &= ~IRQ_SOURCE_TRF7970A;
 
     return TRF7970A_getIrqStatus();
 }

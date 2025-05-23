@@ -18,7 +18,7 @@ void MODE_learn()
             LEDS_STATUS_Bitmask(0b000);
         }
 
-        BP_IrqSource = IRQ_Wait_for_SW1_or_SW2_or_Timeout(ST25TB_INITIATOR_DELAY_BEFORE_RETRY);
+        BP_IrqSource = IRQ_Wait_for(IRQ_SOURCE_SW1 | IRQ_SOURCE_SW2 | IRQ_SOURCE_TIMER, NULL, ST25TB_INITIATOR_DELAY_BEFORE_RETRY);
         if(BP_IrqSource & IRQ_SOURCE_TIMER)
         {
             LED_ON(LED_INDEX_STATUS_BLUE);
@@ -33,7 +33,7 @@ void MODE_learn()
                 SLOTS_Save(index);
                 LED_ON(LED_INDEX_STATUS_GREEN);
 
-                BP_IrqSource = IRQ_Wait_for_SW1_or_SW2();
+                BP_IrqSource = IRQ_Wait_for(IRQ_SOURCE_SW1 | IRQ_SOURCE_SW2, NULL, 0);
                 bNeedToReload = false;
             }
             else if(BP_IrqSource & (IRQ_SOURCE_TRF7970A | IRQ_SOURCE_ST25TB_PROTOCOL_ERR))

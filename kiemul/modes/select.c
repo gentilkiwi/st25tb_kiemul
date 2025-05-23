@@ -12,7 +12,7 @@ void MODE_select()
     LEDS_STATUS_Bitmask(index); //
     do
     {
-        BP_IrqSource = IRQ_Wait_for_SW1_or_SW2();
+        BP_IrqSource = IRQ_Wait_for(IRQ_SOURCE_SW1 | IRQ_SOURCE_SW2, NULL, 0);
         if(BP_IrqSource & IRQ_SOURCE_SW2)
         {
             index++;
