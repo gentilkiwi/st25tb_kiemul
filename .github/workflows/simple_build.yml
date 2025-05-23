@@ -30,15 +30,16 @@ jobs:
         echo "$COMPILER_CGT_PATH/bin" >> "$GITHUB_PATH"
     
     - name: Cache Lib test
-      working-directory: ${{env.COMPILER_CGT_PATH}}/lib
+      id: cache-lib
       uses: actions/cache@v4
+      working-directory: ${{env.COMPILER_CGT_PATH}}/lib
       with:
         path: ./rts430x_sc_sd_eabi.lib
         key: rts-${{ runner.os }}-${{ hashFiles('rts430x_sc_sd_eabi.lib') }}
         restore-keys: |
           rts-${{ runner.os }}-
     
-    - if: ${{ steps.cache-npm.outputs.cache-hit != 'true' }}
+    - if: ${{ steps.cache-lib.outputs.cache-hit != 'true' }}
       name: Generating RTS library (libc.a)
       working-directory: ${{env.COMPILER_CGT_PATH}}/lib
       run: ./mklib --parallel=$(nproc) --pattern=rts430x_sc_sd_eabi.lib
