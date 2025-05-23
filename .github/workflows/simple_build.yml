@@ -39,7 +39,7 @@ jobs:
         LINKER_CMD=$(ls lnk_msp430*.cmd) # project has its own, otherwise $CCS_COMPONENTS_PATH/include/lnk_msp430*.cmd \
         PROJECT_MCU=$(echo "$LINKER_CMD" | sed -E 's/lnk_(.*)\.cmd/\1/' | tr '[:lower:]' '[:upper:]') \
         C_FILES=( $(find . -name '*.c') ) \
-        \
+        echo $LINKER_CMD $PROJECT_MCU \
         cl430 --verbose --parallel=$(nproc) \
           --silicon_version=mspx --code_model=small --data_model=small --silicon_errata=CPU21 --silicon_errata=CPU22 --silicon_errata=CPU40 \
           --opt_level=4 --opt_for_speed=3 --use_hw_mpy=F5 --advice:hw_config=all \
