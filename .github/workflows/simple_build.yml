@@ -29,9 +29,24 @@ jobs:
         rm *_linux-x64_installer.bin
         echo "$COMPILER_CGT_PATH/bin" >> "$GITHUB_PATH"
     
-    - name: Generating RTS library (libc.a)
+    - name: Cache Lib test
+      working-directory: ${{env.COMPILER_CGT_PATH}}/lib
+      uses: actions/cache@v4
+      with:
+        path: ./rts430x_sc_sd_eabi.lib
+        key: rts-${{ runner.os }}-${{ hashFiles('rts430x_sc_sd_eabi.lib') }}
+        restore-keys: |
+          rts-${{ runner.os }}-
+    
+    - if: ${{ steps.cache-npm.outputs.cache-hit != 'true' }}
+      name: Generating RTS library (libc.a)
       working-directory: ${{env.COMPILER_CGT_PATH}}/lib
       run: ./mklib --parallel=$(nproc) --pattern=rts430x_sc_sd_eabi.lib
+
+    
+    #- name: Generating RTS library (libc.a)
+    #  working-directory: ${{env.COMPILER_CGT_PATH}}/lib
+    #  run: ./mklib --parallel=$(nproc) --pattern=rts430x_sc_sd_eabi.lib
 
     - name: Build project
       working-directory: ${{env.PROJECT_NAME}}
@@ -52,8 +67,11 @@ jobs:
           --search_path=$COMPILER_CGT_PATH/lib --search_path=$CCS_COMPONENTS_PATH/lib \
           --output_file=$PROJECT_NAME.out \
           --library=FR2xx/frwp_init.a --library=libc.a $LINKER_CMD
+        
         hex430 --memwidth=8 --romwidth=8 --diag_wrap=off --intel --outfile=$PROJECT_NAME.hex $PROJECT_NAME.out
+        
         strip430 --postlink $PROJECT_NAME.out
+        
         ls -al *.out *.hex
       
     - name: Upload artifacts
