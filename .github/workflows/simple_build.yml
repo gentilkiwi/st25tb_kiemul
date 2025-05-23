@@ -35,7 +35,7 @@ jobs:
       run: ./mklib --parallel=$(nproc) --pattern=rts430x_sc_sd_eabi.lib
 
     - name: Build project
-      working-directory: $PROJECT_NAME
+      working-directory: ${{env.PROJECT_NAME}}
       run: |
         LINKER_CMD=lnk_msp430*.cmd # project has its own, otherwise $CCS_COMPONENTS_PATH/include/lnk_msp430*.cmd
         C_FILES=( $(find . -name '*.c') )
@@ -58,8 +58,8 @@ jobs:
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: ${{github.event.repository.name}}
+        name: ${{env.PROJECT_NAME}}
         compression-level: 9
         path: |
-          $PROJECT_NAME/*.out
-          $PROJECT_NAME/*.hex
+          ${{env.PROJECT_NAME}}/*.out
+          ${{env.PROJECT_NAME}}/*.hex
