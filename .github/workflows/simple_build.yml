@@ -43,11 +43,6 @@ jobs:
       working-directory: ${{env.COMPILER_CGT_PATH}}/lib
       run: ./mklib --parallel=$(nproc) --pattern=rts430x_sc_sd_eabi.lib
 
-    
-    #- name: Generating RTS library (libc.a)
-    #  working-directory: ${{env.COMPILER_CGT_PATH}}/lib
-    #  run: ./mklib --parallel=$(nproc) --pattern=rts430x_sc_sd_eabi.lib
-
     - name: Build project
       working-directory: ${{env.PROJECT_NAME}}
       run: |
