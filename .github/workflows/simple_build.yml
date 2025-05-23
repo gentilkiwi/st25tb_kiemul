@@ -34,9 +34,9 @@ jobs:
       uses: actions/cache@v4
       with:
         path: ${{env.COMPILER_CGT_PATH}}/lib/rts430x_sc_sd_eabi.lib
-        key: rts-${{ runner.os }}-${{ hashFiles(format('{0}{1}', env.COMPILER_CGT_PATH, '/lib/rts430x_sc_sd_eabi.lib')) }}
+        key: rts-${{ hashFiles('**/lib/rts430x_sc_sd_eabi.lib') }}
         restore-keys: |
-          rts-${{ runner.os }}-
+          rts-
     
     - if: ${{ steps.cache-lib.outputs.cache-hit != 'true' }}
       name: Generating RTS library (sc /sd - libc.a)
