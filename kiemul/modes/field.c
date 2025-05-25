@@ -12,7 +12,7 @@ const uint8_t FIELD_FULL_BITMASK[] = {
 
 void MODE_field()
 {
-    uint8_t reg = 0;
+    uint8_t reg;
 
     LEDS_Bitmask(LEDS, NB_LEDS, 0b00000);
 
@@ -24,9 +24,9 @@ void MODE_field()
     do
     {
         TRF7970A_SPI_DirectCommand(TRF79X0_TEST_EXTERNAL_RF_CMD);
-        TIMER_delay_Milliseconds(100);
-        reg = TRF7970A_SPI_Read_SingleRegister(TRF79X0_RSSI_LEVEL_REG);
-        LEDS_Bitmask(LEDS, NB_LEDS, FIELD_FULL_BITMASK[reg & 0b111]);
+        TIMER_delay_Milliseconds(20);
+        reg = TRF7970A_SPI_Read_SingleRegister(TRF79X0_RSSI_LEVEL_REG) & 0b111;
+        LEDS_Bitmask(LEDS, NB_LEDS, FIELD_FULL_BITMASK[reg]);
     } while(!(IRQ_Global & IRQ_SOURCE_SW1));
 
     LEDS_Bitmask(LEDS, NB_LEDS, 0b00000);
