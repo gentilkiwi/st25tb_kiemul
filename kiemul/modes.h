@@ -21,3 +21,4 @@ typedef struct _KAKI_MODE {
 #include "modes/learn.h"
 //#include "modes/unk.h"
 #include "modes/tear.h"
+#include "modes/field.h"

@@ -11,14 +11,16 @@ typedef struct _LED {
     uint8_t bit;
 } LED, *PLED;
 
-extern const LED LEDS[];
-
 #define LEDS_MODES      LEDS
 #define NB_LEDS_MODES   2
 //#define LEDS_SLOTS      LEDS_MODES + NB_LEDS_MODES
 #define NB_LEDS_SLOTS   0
 #define LEDS_STATUS     LEDS_MODES + NB_LEDS_MODES
 #define NB_LEDS_STATUS  3
+
+#define NB_LEDS         (NB_LEDS_MODES + NB_LEDS_SLOTS + NB_LEDS_STATUS)
+
+extern const LED LEDS[NB_LEDS];
 
 // No LEDS_Init(), handled in board.c
 void LEDS_Bitmask(const LED *LEDS_ARRAY, const uint8_t nbLeds, uint8_t bitmask);

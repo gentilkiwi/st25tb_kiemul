@@ -98,8 +98,22 @@ void BOARD_init()
      * SPI parameters
      */
     UCB1CTLW0 = UCCKPH_0 | UCCKPL__LOW | UCMSB_1 | UC7BIT__8BIT | UCMST__MASTER | UCMODE_0 | UCSYNC__SYNC | UCSSEL__SMCLK | UCSTEM_0 | UCSWRST;
-    UCB1BRW = UCBR2; // UCBR2 = 4, 16000000 / 4 = 4000000
+    UCB1BRW = 4; // 16000000 / 4 = 4000000
     UCB1CTLW0 &= ~UCSWRST;
+
+    /*
+     * UART Primary function on P1.4 & P1.5
+     */
+    P1SEL0 = /*BIT0 | BIT1 | BIT2 | BIT3 | */BIT4 | BIT5 /*| BIT6 | BIT7*/;
+
+    /*
+     * UART parameters (115200 bauds/second, 8 bits, LSB first, 1 stop bit, no parity)
+     * https://software-dl.ti.com/msp430/msp430_public_sw/mcu/msp430/MSP430BaudRateConverter/
+     */
+    UCA0CTLW0 = UCSWRST | UCSSEL__SMCLK | UCMSB_0 | UCSPB_0 | UCPEN_0 | UCMODE_0 | UCSYNC__ASYNC | UC7BIT__8BIT;
+    UCA0BRW = 8; // Clock prescaler setting of the Baud rate generator
+    UCA0MCTLW = (247 << 8) | (10 << 4) | UCOS16_1; // Second modulation stage select, First modulation stage select, Oversampling mode enabled
+    UCA0CTLW0 &= ~UCSWRST;
 }
 
 uint16_t lfsr = 0xcafe, bit;

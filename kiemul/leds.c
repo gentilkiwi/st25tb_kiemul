@@ -5,7 +5,7 @@
 */
 #include "leds.h"
 
-const LED LEDS[] = {
+const LED LEDS[NB_LEDS] = {
     // LEDS_MODES
     /* 0 */ {&P1OUT, BIT0}, // LED_MOD_GREEN
     /* 1 */ {&P5OUT, BIT1}, // LED_MOD_RED
@@ -37,7 +37,7 @@ void LEDS_Animation()
 {
     uint8_t i;
 
-    for(i = 0; i < count_of(LEDS); i++)
+    for(i = 0; i < NB_LEDS; i++)
     {
         LED_ON(i);
         TIMER_delay_Milliseconds(10);

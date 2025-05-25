@@ -13,6 +13,7 @@
 #include "references.h"
 #include "leds.h"
 #include "trf7970a.h"
+#include "uart.h"
 
 extern volatile uint8_t IRQ_Global;
 

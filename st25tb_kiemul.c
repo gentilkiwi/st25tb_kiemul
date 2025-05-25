@@ -9,6 +9,7 @@
 const KAKI_MODE Modes[] = {
     {.function = MODE_emulate,  .ledsModesBitmask = 0b01},
     {.function = MODE_rewrite,  .ledsModesBitmask = 0b10},
+    {.function = MODE_field,    .ledsModesBitmask = 0b00},
 };
 
 const KAKI_MODE Modes_2[] = {
