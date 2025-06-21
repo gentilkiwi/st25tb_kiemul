@@ -5,9 +5,18 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      PROJECT_NAME: ${{github.event.repository.name}}
       COMPILER_CGT_PATH: ${{github.workspace}}/ti-cgt-msp430_21.6.1.LTS
       CCS_COMPONENTS_PATH: ${{github.workspace}}/msp430_ccs_files
+      msp430fr2476: st25tb_kiemul
+      msp430fr2673: st25tb_kameleon
+      msp430fr2676: st25tb_kiwi
+
+    strategy:
+      fail-fast: false
+      matrix:
+        # BUILD_MCU: [msp430fr2476, msp430fr2673, msp430fr2676]
+        BUILD_MCU: [msp430fr2476, msp430fr2676]
+
     steps:
 
     - name: Checkout project
@@ -44,25 +53,27 @@ jobs:
 #      run: ./mklib --parallel=$(nproc) --pattern=rts430x_sc_sd_eabi.lib
 
     - name: Build project
-      working-directory: ${{env.PROJECT_NAME}}
+      working-directory: ${{github.event.repository.name}}
       run: |
-        LINKER_CMD=$(ls lnk_msp430*.cmd) # project has its own, otherwise $CCS_COMPONENTS_PATH/include/lnk_msp430*.cmd
-        PROJECT_MCU=$(echo $LINKER_CMD | sed -E 's/lnk_(.*)\.cmd/\U\1/')
         C_FILES=( $(find . -name '*.c') )
+        PROJECT_MCU=${{matrix.BUILD_MCU}}
+        
+        PROJECT_NAME=${${{matrix.BUILD_MCU}}}
+        echo "PROJECT_NAME=$PROJECT_NAME" >> "$GITHUB_ENV"
         
         cl430 --verbose --parallel=$(nproc) \
           --silicon_version=mspx --code_model=large --data_model=small --silicon_errata=CPU21 --silicon_errata=CPU22 --silicon_errata=CPU40 \
           --opt_level=4 --opt_for_speed=2 --use_hw_mpy=F5 --advice:hw_config=all \
           --printf_support=nofloat --diag_warning=225 --diag_wrap=off --display_error_number --emit_warnings_as_errors \
           --include_path=$COMPILER_CGT_PATH/include --include_path=$CCS_COMPONENTS_PATH/include --include_path=. \
-          --define=__${PROJECT_MCU}__ --define=_FRWP_ENABLE --define=_INFO_FRWP_ENABLE \
+          --define=__${PROJECT_MCU@U}__ --define=_FRWP_ENABLE --define=_INFO_FRWP_ENABLE \
           ${C_FILES[*]} \
           --run_linker \
           --heap_size=160 --stack_size=160 --cinit_hold_wdt=on --priority --reread_libs --warn_sections --rom_model \
           --search_path=$COMPILER_CGT_PATH/lib --search_path=$CCS_COMPONENTS_PATH/lib \
           --cinit_compression=off \
           --output_file=$PROJECT_NAME.out \
-          --library=FR2xx/frwp_init.a --library=libc.a $LINKER_CMD
+          --library=FR2xx/frwp_init.a --library=libc.a lnk_${{matrix.BUILD_MCU}}.cmd
         
         hex430 --memwidth=8 --romwidth=8 --diag_wrap=off --intel --outfile=$PROJECT_NAME.hex $PROJECT_NAME.out
         
@@ -76,5 +87,5 @@ jobs:
         name: ${{env.PROJECT_NAME}}
         compression-level: 9
         path: |
-          ${{env.PROJECT_NAME}}/*.out
-          ${{env.PROJECT_NAME}}/*.hex
+          ${{github.event.repository.name}}/*.out
+          ${{github.event.repository.name}}/*.hex
