@@ -29,19 +29,19 @@ jobs:
         rm *_linux-x64_installer.bin
         echo "$COMPILER_CGT_PATH/bin" >> "$GITHUB_PATH"
     
-    - name: Cache RTS library (sc/sd - libc.a)
-      id: cache-lib
-      uses: actions/cache@v4
-      with:
-        path: ${{env.COMPILER_CGT_PATH}}/lib/rts430x_sc_sd_eabi.lib
-        key: rts-${{ hashFiles(format('{0}/lib/src/**', env.COMPILER_CGT_PATH)) }}
-        restore-keys: |
-          rts-
-    
-    - if: ${{ steps.cache-lib.outputs.cache-hit != 'true' }}
-      name: Generating RTS library (sc/sd - libc.a)
-      working-directory: ${{env.COMPILER_CGT_PATH}}/lib
-      run: ./mklib --parallel=$(nproc) --pattern=rts430x_sc_sd_eabi.lib
+#    - name: Cache RTS library (sc/sd - libc.a)
+#      id: cache-lib
+#      uses: actions/cache@v4
+#      with:
+#        path: ${{env.COMPILER_CGT_PATH}}/lib/rts430x_sc_sd_eabi.lib
+#        key: rts-${{ hashFiles(format('{0}/lib/src/**', env.COMPILER_CGT_PATH)) }}
+#        restore-keys: |
+#          rts-
+#    
+#    - if: ${{ steps.cache-lib.outputs.cache-hit != 'true' }}
+#      name: Generating RTS library (sc/sd - libc.a)
+#      working-directory: ${{env.COMPILER_CGT_PATH}}/lib
+#      run: ./mklib --parallel=$(nproc) --pattern=rts430x_sc_sd_eabi.lib
 
     - name: Build project
       working-directory: ${{env.PROJECT_NAME}}
@@ -51,15 +51,16 @@ jobs:
         C_FILES=( $(find . -name '*.c') )
         
         cl430 --verbose --parallel=$(nproc) \
-          --silicon_version=mspx --code_model=small --data_model=small --silicon_errata=CPU21 --silicon_errata=CPU22 --silicon_errata=CPU40 \
-          --opt_level=4 --opt_for_speed=3 --use_hw_mpy=F5 --advice:hw_config=all \
-          --printf_support=minimal --diag_warning=225 --diag_wrap=off --display_error_number --emit_warnings_as_errors \
+          --silicon_version=mspx --code_model=large --data_model=small --silicon_errata=CPU21 --silicon_errata=CPU22 --silicon_errata=CPU40 \
+          --opt_level=4 --opt_for_speed=2 --use_hw_mpy=F5 --advice:hw_config=all \
+          --printf_support=nofloat --diag_warning=225 --diag_wrap=off --display_error_number --emit_warnings_as_errors \
           --include_path=$COMPILER_CGT_PATH/include --include_path=$CCS_COMPONENTS_PATH/include --include_path=. \
-          --define=__$PROJECT_MCU__ --define=_FRWP_ENABLE --define=_INFO_FRWP_ENABLE \
+          --define=__${PROJECT_MCU}__ --define=_FRWP_ENABLE --define=_INFO_FRWP_ENABLE \
           ${C_FILES[*]} \
           --run_linker \
           --heap_size=160 --stack_size=160 --cinit_hold_wdt=on --priority --reread_libs --warn_sections --rom_model \
           --search_path=$COMPILER_CGT_PATH/lib --search_path=$CCS_COMPONENTS_PATH/lib \
+          --cinit_compression=off \
           --output_file=$PROJECT_NAME.out \
           --library=FR2xx/frwp_init.a --library=libc.a $LINKER_CMD
         
