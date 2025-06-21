@@ -4,6 +4,7 @@
     Licence : https://creativecommons.org/licenses/by/4.0/
 */
 #include "uart.h"
+#if !defined(__MSP430FR2673__)
 #include "slots.h"
 #include <file.h>
 
@@ -79,3 +80,4 @@ void kprinthex(const void *lpData, const uint16_t cbData)
         printf(UART_NEWLINE);
     }
 }
+#endif

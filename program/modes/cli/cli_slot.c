@@ -4,6 +4,7 @@
     Licence : https://creativecommons.org/licenses/by/4.0/
 */
 #include "cli_slot.h"
+#if !defined(__MSP430FR2673__)
 #include "cli_data.h"
 
 const CLI_FUNCTION CLI_SLOT_Functions[] = {
@@ -127,3 +128,4 @@ void CLI_SLOT_change()
 
     CLI_print_status(ret);
 }
+#endif

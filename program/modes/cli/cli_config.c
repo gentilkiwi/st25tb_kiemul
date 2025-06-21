@@ -4,6 +4,7 @@
     Licence : https://creativecommons.org/licenses/by/4.0/
 */
 #include "cli_config.h"
+#if !defined(__MSP430FR2673__)
 #include "cli_slot.h"
 
 const char lblbDoNotWriteSystem[] = "bDoNotWriteSystem", lblbDoNotWriteCounters[] = "bDoNotWriteCounters", lblbModeEmulateSW2Save[] = "bModeEmulateSW2Save", lblbUARTEnabled[] = "bUARTEnabled";
@@ -81,3 +82,4 @@ void CLI_CONFIG_bUART()
 {
     CLI_CONFIG_GenericAction(&FlashStoredData.bUARTEnabled, lblbUARTEnabled);
 }
+#endif

@@ -4,6 +4,7 @@
     Licence : https://creativecommons.org/licenses/by/4.0/
 */
 #include "cli_data.h"
+#if !defined(__MSP430FR2673__)
 #include "cli_slot.h"
 
 const CLI_FUNCTION CLI_DATA_Functions[] = {
@@ -203,3 +204,4 @@ void CLI_DATA_emul()
     }
     while (!bExitMode);
 }
+#endif

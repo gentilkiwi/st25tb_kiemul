@@ -4,7 +4,7 @@
     Licence : https://creativecommons.org/licenses/by/4.0/
 */
 #include "st25tb_utils.h"
-
+#if !defined(__MSP430FR2673__)
 uint8_t st25tb_utils_Display_UIDChip(const uint8_t *pui8UID)
 {
     uint8_t nbSectors, chipId;
@@ -103,4 +103,4 @@ void st25tb_utils_Display_dump(const uint8_t data[SLOTS_ST25TB_SECTORS_INTERNAL]
         printf("---------+-------------+---------" UART_NEWLINE);
     }
 }
-
+#endif

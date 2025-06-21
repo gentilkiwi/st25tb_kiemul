@@ -24,7 +24,7 @@ typedef struct _LED {
 #define NB_LEDS_STATUS  3
 
 #define LEDS_SLOTS_Bitmask(bitmask)     //
-#elif defined(__MSP430FR2676__)
+#elif defined(__MSP430FR2673__) || defined(__MSP430FR2676__)
 #define LED_OFFSET_STATUS_BLUE          0
 #define LED_OFFSET_STATUS_GREEN         1
 #define LED_OFFSET_STATUS_RED           2

@@ -4,7 +4,7 @@
     Licence : https://creativecommons.org/licenses/by/4.0/
 */
 #include "cli_std.h"
-
+#if !defined(__MSP430FR2673__)
 void CLI_STD_test();
 
 const CLI_FUNCTION CLI_STD_Functions[] = {
@@ -88,3 +88,4 @@ void CLI_STD_test()
 {
     ;
 }
+#endif

@@ -18,7 +18,7 @@ void MODE_field()
 
 #if defined(__MSP430FR2476__)
     LEDS_Bitmask(LEDS, NB_LEDS, 0b00000);
-#elif defined(__MSP430FR2676__)
+#elif defined(__MSP430FR2673__) || defined(__MSP430FR2676__)
     LEDS_SLOTS_Bitmask(0b00000000);
 #endif
 
@@ -45,7 +45,7 @@ void MODE_field()
 
 #if defined(__MSP430FR2476__)
         LEDS_Bitmask(LEDS, NB_LEDS, FIELD_FULL_BITMASK[reg]);
-#elif defined(__MSP430FR2676__)
+#elif defined(__MSP430FR2673__) || defined(__MSP430FR2676__)
         if(reg)
         {
             reg++;

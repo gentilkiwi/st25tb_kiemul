@@ -4,6 +4,7 @@
     Licence : https://creativecommons.org/licenses/by/4.0/
 */
 #include "cli_card.h"
+#if !defined(__MSP430FR2673__)
 #include "cli_data.h"
 
 const CLI_FUNCTION CLI_CARD_Functions[] = {
@@ -437,3 +438,4 @@ void CLI_CARD_tear()
         }
     }
 }
+#endif

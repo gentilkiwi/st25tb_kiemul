@@ -12,6 +12,10 @@
 #define ST25TB_BOARD_NAME       "ST25TB kiemul"
 #define ST25TB_BOARD_VERSION    "0.1"
 #define ST25TB_MCU_NAME         "MSP430FR2476"
+#elif defined(__MSP430FR2673__)
+#define ST25TB_BOARD_NAME       "ST25TB kameleon"
+#define ST25TB_BOARD_VERSION    "0.1"
+#define ST25TB_MCU_NAME         "MSP430FR2673"
 #elif defined(__MSP430FR2676__)
 #define ST25TB_BOARD_NAME       "ST25TB kiwi"
 #define ST25TB_BOARD_VERSION    "0.1"
@@ -27,18 +31,22 @@
 #include "trf7970a.h"
 
 extern volatile uint8_t IRQ_Global;
+#if !defined(__MSP430FR2673__)
 extern char UART_RX_BUFFER[0x300];
 extern uint16_t cbRxBuffer;
+#endif
 
 void BOARD_init();
 
+#if !defined(__MSP430FR2673__)
 void ADC_TEMP_Enable();
 void ADC_TEMP_Disable();
 uint16_t ADC_TEMP_Get_RAW();
 int16_t ADC_TEMP_Get();
+uint16_t CRC16_CCIT(const uint8_t *data, uint16_t cbData);
+#endif
 
 uint16_t RAND_Generate();
-uint16_t CRC16_CCIT(const uint8_t *data, uint16_t cbData);
 
 #define TIMER_stop()                    TA0CTL &= ~(TAIE | MC)
 #define TIMER_delay_Milliseconds(n_ms)  TIMER_delay_Milliseconds_internal((n_ms) * 33)
@@ -55,7 +63,9 @@ void TIMER_delay_Microseconds_internal(uint16_t n_unit_us); // max is UINT16_MAX
 #define IRQ_SOURCE_SW2                  0x04
 #define IRQ_SOURCE_TIMER                0x08
 #define IRQ_SOURCE_ST25TB_PROTOCOL_ERR  0x10
+#if !defined(__MSP430FR2673__)
 #define IRQ_SOURCE_UART_RX              0x20
+#endif
 
 uint8_t IRQ_Wait_for(uint8_t IRQWanted, uint8_t *pTRF7970A_irqStatus, uint16_t timeout_ms);
 
@@ -64,6 +74,7 @@ uint8_t IRQ_Wait_for(uint8_t IRQWanted, uint8_t *pTRF7970A_irqStatus, uint16_t t
 #define SW1_IS_PRESSED()                (!(SW1_PORT & SW1_BIT))
 #define SW2_IS_PRESSED()                (!(SW2_PORT & SW2_BIT))
 
+#if !defined(__MSP430FR2673__)
 #define UART_ENABLE_RX_IRQ()            do{ UCA0IE = UCRXIE_1 ;} while(0)
 #define UART_DISABLE_RX_IRQ()           do{ UCA0IE = 0; } while(0)
 
@@ -76,6 +87,7 @@ uint8_t IRQ_Wait_for(uint8_t IRQWanted, uint8_t *pTRF7970A_irqStatus, uint16_t t
 
 #define CALADC_15V_30C                  (*(uint16_t *)(TLVMEM_START + 0x1a))
 #define CALADC_15V_105C                 (*(uint16_t *)(TLVMEM_START + 0x1c))
+#endif
 
 #if defined(__MSP430FR2476__)
 #define SW1_PORT                        P4IN
@@ -89,6 +101,23 @@ uint8_t IRQ_Wait_for(uint8_t IRQWanted, uint8_t *pTRF7970A_irqStatus, uint16_t t
 
 #define TRF_EN_PORT                     P1OUT
 #define TRF_EN_BIT                      BIT2
+
+#define TRF_IRQ_PORT                    P2IN
+#define TRF_IRQ_IFG                     P2IFG
+#define TRF_IRQ_IE                      P2IE
+#define TRF_IRQ_BIT                     BIT1
+#elif defined(__MSP430FR2673__)
+#define SW1_PORT                        P1IN
+#define SW1_BIT                         BIT4
+
+#define SW2_PORT                        P4IN
+#define SW2_BIT                         BIT2
+
+#define TRF_CS_PORT                     P2OUT
+#define TRF_CS_BIT                      BIT0
+
+#define TRF_EN_PORT                     P2OUT
+#define TRF_EN_BIT                      BIT7
 
 #define TRF_IRQ_PORT                    P2IN
 #define TRF_IRQ_IFG                     P2IFG

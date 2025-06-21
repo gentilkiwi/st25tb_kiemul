@@ -4,6 +4,7 @@
     Licence : https://creativecommons.org/licenses/by/4.0/
 */
 #include "cli_ref.h"
+#if !defined(__MSP430FR2673__)
 #include "cli_data.h"
 
 #if defined(REFERENCES_DATA_READY)
@@ -100,4 +101,5 @@ void CLI_REF_load()
     CLI_print_status(ret);
 }
 
+#endif
 #endif

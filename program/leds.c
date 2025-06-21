@@ -14,6 +14,26 @@ const LED LEDS[NB_LEDS] = {
     /* 0 */ {&P4OUT, BIT2}, // LED_STATUS_GREEN
     /* 1 */ {&P2OUT, BIT7}, // LED_STATUS_RED
     /* 2 */ {&P2OUT, BIT4}, // LED_STATUS_BLUE
+#elif defined(__MSP430FR2673__)
+    // LEDS_MODES
+    /* 0 */ {&P1OUT, BIT5}, // LED_MOD_EMULATE
+    /* 1 */ {&P1OUT, BIT6}, // LED_MOD_REWRITE
+    /* 2 */ {&P1OUT, BIT7}, // LED_MOD_DETECT
+    /* 3 */ {&P1OUT, BIT0}, // LED_MOD_LEARN
+    /* 4 */ {&P1OUT, BIT1}, // LED_MOD_UNK
+    // LEDS_SLOTS
+    /* 0 */ {&P1OUT, BIT2}, // LED_SLOT0
+    /* 1 */ {&P1OUT, BIT3}, // LED_SLOT1
+    /* 2 */ {&P2OUT, BIT2}, // LED_SLOT2
+    /* 3 */ {&P3OUT, BIT0}, // LED_SLOT3
+    /* 4 */ {&P3OUT, BIT3}, // LED_SLOT4
+    /* 5 */ {&P2OUT, BIT3}, // LED_SLOT5
+    /* 6 */ {&P3OUT, BIT4}, // LED_SLOT6
+    /* 7 */ {&P3OUT, BIT1}, // LED_SLOT7
+    // LEDS_STATUS
+    /* 0 */ {&P3OUT, BIT7}, // LED_STATUS_BLUE
+    /* 1 */ {&P4OUT, BIT0}, // LED_STATUS_GREEN
+    /* 2 */ {&P4OUT, BIT1}, // LED_STATUS_RED
 #elif defined(__MSP430FR2676__)
     // LEDS_MODES
     /* 0 */ {&P1OUT, BIT7}, // LED_MOD_EMULATE

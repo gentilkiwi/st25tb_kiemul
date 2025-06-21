@@ -5,6 +5,7 @@
 */
 #pragma once
 #include "cli.h"
+#if !defined(__MSP430FR2673__)
 #include "cli/cli_std.h"
 #include "cli/cli_config.h"
 #include "cli/cli_dump.h"
@@ -271,3 +272,4 @@ uint8_t CLI_BlockNumber_Value(const char *strToken, uint8_t *pBlockNumber, uint8
 
     return ret;
 }
+#endif

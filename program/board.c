@@ -6,8 +6,10 @@
 #include "board.h"
 
 volatile uint8_t IRQ_Global = IRQ_SOURCE_NONE;
+#if !defined(__MSP430FR2673__)
 char UART_RX_BUFFER[0x300];
 uint16_t cbRxBuffer = 0;
+#endif
 
 void BOARD_init()
 {
@@ -92,6 +94,50 @@ void BOARD_init()
      */
     P2IE = BIT3;
     P4IE = BIT0;
+#elif defined(__MSP430FR2673__)
+    /*
+     * P1.0 LED_MOD_LEARN    output        |  P2.0 SPI_CS           output        |  P3.0 LED_SLOT3        output        |  P4.0 LED_STATUS_GREEN output        *
+     * P1.1 LED_MOD_UNK      output        |  P2.1 TRF_IRQ          input/irq     |  P3.1 LED_SLOT7        output        |  P4.1 LED_STATUS_RED   output        *
+     * P1.2 LED_SLOT0        output        |  P2.2 LED_SLOT2        output        |  P3.2 SPI_MOSI         output/spi    |  P4.2 SW2              input/pullup  *
+     * P1.3 LED_SLOT1        output        |  P2.3 LED_SLOT5        output        |  P3.3 LED_SLOT4        output        |  P4.3 n/a              output        *
+     * P1.4 SW1              input/pullup  |  P2.4 n/a              output        |  P3.4 LED_SLOT6        output        |  P4.4 n/a              output        *
+     * P1.5 LED_MOD_EMULATE  output        |  P2.5 n/a              output        |  P3.5 SPI_CLK          output/spi    |  P4.5 n/a              output        *
+     * P1.6 LED_MOD_REWRITE  output        |  P2.6 n/a              output        |  P3.6 SPI_MISO         input/spi     |  P4.6 n/a              output        *
+     * P1.7 LED_MOD_DETECT   output        |  P2.7 TRF_EN           output        |  P3.7 LED_STATUS_BLUE  output        |  P4.7 n/a              output        *
+     */
+    P1DIR = BIT0 | BIT1 | BIT2 | BIT3 | /*BIT4 | */BIT5 | BIT6 | BIT7;
+    P2DIR = BIT0 | /*BIT1 | */BIT2 | BIT3 | BIT4 | BIT5 | BIT6 | BIT7;
+    P3DIR = BIT0 | BIT1 | BIT2 | BIT3 | BIT4 | BIT5 | /*BIT6 | */BIT7;
+    P4DIR = BIT0 | BIT1 | /*BIT2 | */BIT3 | /*BIT4 | */BIT5 | BIT6 | BIT7;
+
+    /*
+     * P2.0 high for SPI_CS
+     * ... and all other to 0 (LEDs, etc.)
+     */
+    P1OUT = 0;
+    P2OUT = BIT0;
+    P3OUT = 0;
+    P4OUT = 0;
+
+    /*
+     * P1.4 & P4.2 IRQ high to low selected for SW1 & SW2
+     * P2.1 low to high select for TRF_IRQ
+     */
+    P1IES = BIT4;
+    P4IES = BIT2;
+    P2IES = 0;
+
+    /*
+     * P1.4 & P4.2 IRQ clear for SW1 & SW2
+     */
+    P1IFG = 0;
+    P4IFG = 0;
+
+    /*
+     * P1.4 & P4.2 IRQ enabled for SW1 & SW2
+     */
+    P1IE = BIT4;
+    P4IE = BIT2;
 #elif defined(__MSP430FR2676__)
     /*
      * P1.0 LED_MOD_REWRITE     output      |   P2.0 SPI_CS             output  |   P3.0 LED_SLOT1              output      |   P4.0 LED_STATUS_GREEN   output      *
@@ -144,15 +190,12 @@ void BOARD_init()
     P1IE = BIT6;
     P4IE = BIT2;
 #endif
+
+#if !defined(__MSP430FR2673__)
     /*
      * UART Primary function on P1.4 & P1.5
      */
     P1SEL0 = /*BIT0 | BIT1 | BIT2 | BIT3 | */BIT4 | BIT5 /*| BIT6 | BIT7*/;
-
-    /*
-     * SPI Primary function on P3.2, P3.5 & P3.6
-     */
-    P3SEL0 = /*BIT0 | BIT1 | */BIT2 | /*BIT3 | BIT4 | */BIT5 | BIT6 /*| BIT7*/;
 
     /*
      * UART parameters (115200 bauds/second, 8 bits, LSB first, 1 stop bit, no parity)
@@ -162,6 +205,11 @@ void BOARD_init()
     UCA0BRW = 8; // Clock prescaler setting of the Baud rate generator
     UCA0MCTLW = (247 << 8) | (10 << 4) | UCOS16_1; // Second modulation stage select, First modulation stage select, Oversampling mode enabled
     UCA0CTLW0 &= ~UCSWRST;
+#endif
+    /*
+     * SPI Primary function on P3.2, P3.5 & P3.6
+     */
+    P3SEL0 = /*BIT0 | BIT1 | */BIT2 | /*BIT3 | BIT4 | */BIT5 | BIT6 /*| BIT7*/;
 
     /*
      * SPI parameters
@@ -171,6 +219,7 @@ void BOARD_init()
     UCB1CTLW0 &= ~UCSWRST;
 }
 
+#if !defined(__MSP430FR2673__)
 void ADC_TEMP_Enable()
 {
     PMMCTL0_H = PMMPW_H;
@@ -206,13 +255,6 @@ int16_t ADC_TEMP_Get()
     return (int16_t) (((int32_t)((int16_t)(ADC_Result - CALADC_15V_30C)) * (105 - 30) * 10) / (CALADC_15V_105C - CALADC_15V_30C) + (30 * 10));
 }
 
-uint16_t lfsr = 0xcafe, bit;
-uint16_t RAND_Generate()
-{
-    bit = ((lfsr >> 0) ^ (lfsr >> 2) ^ (lfsr >> 3) ^ (lfsr >> 5)) & 1;
-    return lfsr = (lfsr >> 1) | (bit << 15);
-}
-
 uint16_t CRC16_CCIT(const uint8_t *data, uint16_t cbData)
 {
     uint16_t i;
@@ -224,6 +266,13 @@ uint16_t CRC16_CCIT(const uint8_t *data, uint16_t cbData)
     }
 
     return CRCINIRES;
+}
+#endif
+uint16_t lfsr = 0xcafe, bit;
+uint16_t RAND_Generate()
+{
+    bit = ((lfsr >> 0) ^ (lfsr >> 2) ^ (lfsr >> 3) ^ (lfsr >> 5)) & 1;
+    return lfsr = (lfsr >> 1) | (bit << 15);
 }
 
 void TIMER_delay_Milliseconds_internal(uint16_t n_unit_ms) // max is UINT16_MAX ( 1985 ms * 33 = ~ UINT16_MAX )
@@ -277,14 +326,14 @@ uint8_t IRQ_Wait_for(uint8_t IRQWanted, uint8_t *pTRF7970A_irqStatus, uint16_t t
     {
         TIMER_start_Milliseconds(timeout_ms);
     }
-
+#if !defined(__MSP430FR2673__)
     if(IRQWanted & IRQ_SOURCE_UART_RX)
     {
         IRQ_Global &= ~IRQ_SOURCE_UART_RX;
         cbRxBuffer = 0;
         UART_ENABLE_RX_IRQ();
     }
-
+#endif
     while(!(IRQWanted & IRQ_Global))
     {
         __low_power_mode_0();
@@ -301,12 +350,12 @@ uint8_t IRQ_Wait_for(uint8_t IRQWanted, uint8_t *pTRF7970A_irqStatus, uint16_t t
     {
         TIMER_stop();
     }
-
+#if !defined(__MSP430FR2673__)
     if(IRQWanted & IRQ_SOURCE_UART_RX)
     {
         UART_DISABLE_RX_IRQ();
     }
-
+#endif
     return ret;
 }
 
@@ -327,7 +376,6 @@ __interrupt void Port2_ISR(void)
     }
     __low_power_mode_off_on_exit();
 }
-
 /*
  * Interrupt vector for SW1 (P4.0)
  * Usually handled by switch(P4IV) and case P4IV__P4IFG0:, but as there is only one...
@@ -337,6 +385,41 @@ __interrupt void Port4_ISR(void)
 {
     P4IFG = 0; // P4IFG &= ~BIT2;
     IRQ_Global |= IRQ_SOURCE_SW1;
+    __low_power_mode_off_on_exit();
+}
+
+#elif defined(__MSP430FR2673__)
+/*
+ * Interrupt vector for SW1 (P1.4)
+ * Usually handled by switch(P1IV) and case P1IV__P1IFG4:, but as there is only one...
+ */
+#pragma vector=PORT1_VECTOR
+__interrupt void Port1_ISR(void)
+{
+    P1IFG = 0; // P1IFG &= ~BIT4;
+    IRQ_Global |= IRQ_SOURCE_SW1;
+    __low_power_mode_off_on_exit();
+}
+/*
+ * Interrupt vector for SW2 (P4.2)
+ * Usually handled by switch(P4IV) and case P4IV__P4IFG2:, but as there is only one...
+ */
+#pragma vector=PORT4_VECTOR
+__interrupt void Port4_ISR(void)
+{
+    P4IFG = 0; // P4IFG &= ~BIT2;
+    IRQ_Global |= IRQ_SOURCE_SW2;
+    __low_power_mode_off_on_exit();
+}
+/*
+ * Interrupt vector for TRF_IRQ (P2.1)
+ * Usually handled by switch(P2IV) and case P2IV__P2IFG1:, but as there is only one...
+ */
+#pragma vector=PORT2_VECTOR
+__interrupt void Port2_ISR(void)
+{
+    P2IFG = 0; // P2IFG &= ~BIT1;
+    IRQ_Global |= IRQ_SOURCE_TRF7970A;
     __low_power_mode_off_on_exit();
 }
 
@@ -352,7 +435,6 @@ __interrupt void Port1_ISR(void)
     IRQ_Global |= IRQ_SOURCE_SW1;
     __low_power_mode_off_on_exit();
 }
-
 /*
  * Interrupt vector for SW2 (P4.2)
  * Usually handled by switch(P4IV) and case P4IV__P4IFG2:, but as there is only one...
@@ -389,6 +471,7 @@ __interrupt void TIMERA0_ISR (void)
     __low_power_mode_off_on_exit();
 }
 
+#if !defined(__MSP430FR2673__)
 /*
  * Interrupt vector for EUSCI AO (UART RX)
  */
@@ -435,3 +518,4 @@ __interrupt void EUSCI_A0_ISR (void)
 
     __low_power_mode_off_on_exit();
 }
+#endif

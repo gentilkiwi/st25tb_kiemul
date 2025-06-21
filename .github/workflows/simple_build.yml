@@ -14,8 +14,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # BUILD_MCU: [msp430fr2476, msp430fr2673, msp430fr2676]
-        BUILD_MCU: [msp430fr2476, msp430fr2676]
+        BUILD_MCU: [msp430fr2476, msp430fr2673, msp430fr2676]
 
     steps:
 

@@ -20,7 +20,7 @@ const KAKI_MODE Modes_2[] = {
     {.function = MODE_tear,     .ledsModesBitmask = 0b00,       .Name = "Tear!"},
     {.function = MODE_cli,      .ledsModesBitmask = 0b00,       .Name = "CLI"},
 };
-#elif defined(__MSP430FR2676__)
+#elif defined(__MSP430FR2673__) || defined(__MSP430FR2676__)
 const KAKI_MODE Modes[] = {
     {.function = MODE_emulate,  .ledsModesBitmask = 1 << 0,     .Name = "Emulate"},
     {.function = MODE_rewrite,  .ledsModesBitmask = 1 << 1,     .Name = "Rewrite"},
@@ -33,10 +33,13 @@ const KAKI_MODE Modes[] = {
 const KAKI_MODE Modes_2[] = {
     {.function = MODE_learn,    .ledsModesBitmask = 1 << 3,     .Name = "Learn"},
     {.function = MODE_tear,     .ledsModesBitmask = 1 << 4,     .Name = "Tear!"},
+#if !defined(__MSP430FR2673__)
     {.function = MODE_cli,      .ledsModesBitmask = 0b10101,    .Name = "CLI"},
+#endif
 };
 #endif
 
+#if !defined(__MSP430FR2673__)
 const char KIWI_BANNER[] =  "\x1b[2J\x1b[3J\x1b[H" UART_NEWLINE
     "  .#####.         " ST25TB_BOARD_NAME " " ST25TB_BOARD_VERSION UART_NEWLINE
     " .## ^ ##.__ _    TI " ST25TB_MCU_NAME " & TRF7970A" UART_NEWLINE
@@ -44,11 +47,14 @@ const char KIWI_BANNER[] =  "\x1b[2J\x1b[3J\x1b[H" UART_NEWLINE
     " ## \\ / | K  |     Benjamin DELPY `gentilkiwi` ( benjamin@gentilkiwi.com )" UART_NEWLINE
     " '## v #\\____/" UART_NEWLINE
     "  '#####' L\\_      ***/" UART_NEWLINE UART_NEWLINE;
+#endif
 
 void main(void)
 {
     uint8_t maxModes;
+#if !defined(__MSP430FR2673__)
     uint16_t calculatedCRC;
+#endif
     const KAKI_MODE *pMode, *cMode;
 
     BOARD_init();
@@ -56,6 +62,7 @@ void main(void)
     LEDS_Animation();
     SLOTS_Change(FlashStoredData.CurrentSlot);
 
+#if !defined(__MSP430FR2673__)
     UART_Redirect_std();
 
     puts(KIWI_BANNER);
@@ -71,6 +78,7 @@ void main(void)
             , DIE_LOT_WAFER_ID, DIE_LOT_WAFER_X_POS, DIE_LOT_WAFER_Y_POS
             , SYSRSTIV
     );
+#endif
 
     if(!SW1_IS_PRESSED()) // LEARN & TEAR only available if pushing MODE at startup
     {
@@ -83,6 +91,7 @@ void main(void)
         maxModes = count_of(Modes_2);
     }
 
+#if !defined(__MSP430FR2673__)
     if(SW2_IS_PRESSED()) // override stored config
     {
         UART_Enabled = 1;
@@ -107,6 +116,7 @@ void main(void)
             , FlashStoredData.CurrentSlot
             , SLOTS_ST25TB_COUNT
     );
+#endif
 
     while(1)
     {
