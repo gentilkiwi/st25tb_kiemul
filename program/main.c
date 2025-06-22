@@ -12,7 +12,6 @@ const KAKI_MODE Modes[] = {
     {.function = MODE_rewrite,  .ledsModesBitmask = 0b10,       .Name = "Rewrite"},
     {.function = MODE_field,    .ledsModesBitmask = 0b00,       .Name = "Field"},
 };
-
 const KAKI_MODE Modes_2[] = {
     {.function = MODE_detect,   .ledsModesBitmask = 0b01,       .Name = "Detect"},
     {.function = MODE_select,   .ledsModesBitmask = 0b10,       .Name = "Select"},
@@ -29,7 +28,6 @@ const KAKI_MODE Modes[] = {
     {.function = MODE_field,    .ledsModesBitmask = 1 << 4,     .Name = "Field"},
     {.function = MODE_unk,      .ledsModesBitmask = 0,          .Name = "Counter5"},
 };
-
 const KAKI_MODE Modes_2[] = {
     {.function = MODE_learn,    .ledsModesBitmask = 1 << 3,     .Name = "Learn"},
     {.function = MODE_tear,     .ledsModesBitmask = 1 << 4,     .Name = "Tear!"},

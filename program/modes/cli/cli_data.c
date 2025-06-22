@@ -176,7 +176,7 @@ void CLI_DATA_emul()
 
     printf("Emulation of current data with ");
     st25tb_utils_Display_UIDChip(SLOTS_ST25TB_Current[SLOTS_ST25TB_INDEX_UID]);
-    printf("> ENTER / ESC / CTRL+C to stop" UART_NEWLINE);
+    printf("> ENTER / ESC / CTRL+C or SW2 to stop" UART_NEWLINE);
 
     do
     {
@@ -186,8 +186,8 @@ void CLI_DATA_emul()
         do
         {
             bContinueStateMachine = 0;
-            BP_IrqSource = IRQ_Wait_for(IRQ_SOURCE_UART_RX | IRQ_SOURCE_TRF7970A, &TRF7970A_irqStatus, 0);
-            if (BP_IrqSource & IRQ_SOURCE_UART_RX)
+            BP_IrqSource = IRQ_Wait_for(IRQ_SOURCE_SW2 | IRQ_SOURCE_UART_RX | IRQ_SOURCE_TRF7970A, &TRF7970A_irqStatus, 0);
+            if (BP_IrqSource & (IRQ_SOURCE_UART_RX | IRQ_SOURCE_SW2))
             {
                 bExitMode = 1;
             }
