@@ -180,7 +180,7 @@ void CLI_DATA_emul()
 
     do
     {
-        ST25TB_TRF7970A_Mode(0);
+        TRF7970A_mode(&ST25TB_TRF7970A_Mode_Target);
         TRF7970A_SPI_DirectCommand(TRF79X0_RUN_DECODERS_CMD);
         LED_ON(LED_INDEX_STATUS_BLUE);
         do

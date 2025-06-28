@@ -13,6 +13,7 @@
 #include "cli/cli_ref.h"
 #include "cli/cli_data.h"
 #include "cli/cli_card.h"
+#include "cli/cli_14a.h"
 
 const CLI_MODULE * CLI_Modules[] = {
     //&CLI_STD_Module,
@@ -24,6 +25,7 @@ const CLI_MODULE * CLI_Modules[] = {
 #endif
     &CLI_DATA_Module,
     &CLI_CARD_Module,
+    &CLI_14A_Module,
 };
 
 void MODE_cli_Module(const CLI_MODULE * Module, const char* strToken)

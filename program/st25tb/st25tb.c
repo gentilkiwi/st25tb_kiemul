@@ -45,7 +45,7 @@ uint8_t ST25TB_Send(const uint8_t *pcbData, const uint8_t cbData)
     return status;
 }
 
-const uint8_t ST25TB_TRF7970A_Mode_Initiator[] = {
+const uint8_t ST25TB_TRF7970A_Mode_Initiator_Seq[] = {
     MK_WS(TRF79X0_ISO_CONTROL_REG), 0x0c,
     MK_WS(TRF79X0_RX_SPECIAL_SETTINGS_REG), 0xf0,
     MK_WS(TRF79X0_CHIP_STATUS_CTRL_REG), TRF79X0_STATUS_CTRL_RF_ON,
@@ -57,7 +57,13 @@ const uint8_t ST25TB_TRF7970A_Mode_Initiator[] = {
     MK_RS(TRF79X0_IRQ_STATUS_REG), 0x00,
 };
 
-const uint8_t ST25TB_TRF7970A_Mode_Target[] = {
+const TRF7970A_MODE ST25TB_TRF7970A_Mode_Initiator = {
+    .seq = ST25TB_TRF7970A_Mode_Initiator_Seq,
+    .cbSec = sizeof(ST25TB_TRF7970A_Mode_Initiator_Seq),
+    .delay = 2,
+};
+
+const uint8_t ST25TB_TRF7970A_Mode_Target_Seq[] = {
     MK_WS(TRF79X0_ISO_CONTROL_REG), 0x25,
     MK_WS(TRF79X0_RX_SPECIAL_SETTINGS_REG), 0xf0,
     MK_WS(TRF79X0_CHIP_STATUS_CTRL_REG), TRF79X0_STATUS_CTRL_RF_ON,
@@ -69,25 +75,8 @@ const uint8_t ST25TB_TRF7970A_Mode_Target[] = {
     MK_RS(TRF79X0_IRQ_STATUS_REG), 0x00,
 };
 
-void ST25TB_TRF7970A_Mode(uint8_t bIsInitiator)
-{
-    TRF_IRQ_DISABLE();
-
-    TRF7970A_SPI_DirectCommand(TRF79X0_SOFT_INIT_CMD);
-    __no_operation();
-    __no_operation();
-    TRF7970A_SPI_DirectCommand(TRF79X0_IDLE_CMD);
-    TIMER_delay_Milliseconds(2);
-
-    if(bIsInitiator)
-    {
-        TRF7970A_SPI_Send_raw(ST25TB_TRF7970A_Mode_Initiator, sizeof(ST25TB_TRF7970A_Mode_Initiator));
-    }
-    else
-    {
-        TRF7970A_SPI_Send_raw(ST25TB_TRF7970A_Mode_Target, sizeof(ST25TB_TRF7970A_Mode_Target)); // RUN_DECODERS moved to program part
-    }
-
-    TIMER_delay_Milliseconds(2);
-    TRF_IRQ_ENABLE();
-}
+const TRF7970A_MODE ST25TB_TRF7970A_Mode_Target = {
+    .seq = ST25TB_TRF7970A_Mode_Target_Seq,
+    .cbSec = sizeof(ST25TB_TRF7970A_Mode_Target_Seq),
+    .delay = 2,
+};

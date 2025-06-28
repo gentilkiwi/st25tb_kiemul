@@ -11,7 +11,7 @@ void MODE_emulate()
 
     do
     {
-        ST25TB_TRF7970A_Mode(0);
+        TRF7970A_mode(&ST25TB_TRF7970A_Mode_Target);
         TRF7970A_SPI_DirectCommand(TRF79X0_RUN_DECODERS_CMD);
 
         do

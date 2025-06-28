@@ -28,7 +28,7 @@ void MODE_tear()
     {
         if(BP_IrqSource == IRQ_SOURCE_SW2) // to deal with first start and restart
         {
-            ST25TB_TRF7970A_Mode(1);
+            TRF7970A_mode(&ST25TB_TRF7970A_Mode_Initiator);
             LEDS_STATUS_Bitmask(0b000);
             LEDS_SLOTS_Bitmask(0b00000000);
         }
@@ -92,7 +92,7 @@ void MODE_tear()
                     {
                         kprintf("|%s| it was in const references, rewrite...: ", __FUNCTION__);
 
-                        ST25TB_TRF7970A_Mode(1);
+                        TRF7970A_mode(&ST25TB_TRF7970A_Mode_Initiator);
                         BP_IrqSource = ST25TB_Initiator_Write_Current_Card();
                         if(BP_IrqSource == IRQ_SOURCE_NONE)
                         {

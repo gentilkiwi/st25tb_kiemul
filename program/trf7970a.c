@@ -26,6 +26,19 @@ void TRF7970A_init()
     TRF_IRQ_ENABLE();
 }
 
+void TRF7970A_mode(const TRF7970A_MODE * pMode)
+{
+    TRF_IRQ_DISABLE();
+    TRF7970A_SPI_DirectCommand(TRF79X0_SOFT_INIT_CMD);
+    __no_operation();
+    __no_operation();
+    TRF7970A_SPI_DirectCommand(TRF79X0_IDLE_CMD);
+    TIMER_delay_Milliseconds(2);
+    TRF7970A_SPI_Send_raw(pMode->seq, pMode->cbSec);
+    TIMER_delay_Milliseconds(pMode->delay);
+    TRF_IRQ_ENABLE();
+}
+
 void TRF7970A_SPI_Send_raw(const uint8_t *pcbData, uint8_t cbData)
 {
     TRF_CS_ENABLE();
@@ -77,12 +90,22 @@ void TRF7970A_SPI_Read_ContinuousRegister_internal(uint8_t Register_Prepared, ui
     TRF_CS_DISABLE();
 }
 
-void TRF7970A_SPI_Write_Packet_TYPED(const uint8_t *pcbData, uint8_t cbData, const uint8_t type)
+void TRF7970A_SPI_Write_Packet_TYPED_BB(const uint8_t *pcbData, uint8_t cbData, const uint8_t type, const uint8_t brokenBits)
 {
     uint8_t ui8LenLowerNibble, ui8LenHigherNibble;
     uint16_t ui16TotalLength = cbData;
 
-    ui8LenLowerNibble = (ui16TotalLength & 0x0f) << 4;
+    if(brokenBits)
+    {
+        ui8LenLowerNibble = ((brokenBits & 0x07) << 1) | 0x01;
+        ui16TotalLength--;
+    }
+    else
+    {
+        ui8LenLowerNibble = 0;
+    }
+
+    ui8LenLowerNibble |= (ui16TotalLength & 0x0f) << 4;
     ui8LenHigherNibble = (uint8_t) ((ui16TotalLength & 0x0ff0) >> 4);
 
     TRF_CS_ENABLE();

@@ -52,7 +52,7 @@ uint8_t CLI_CARD_Get()
 {
     uint8_t ret = 0, i, BP_IrqSource, ui8ChipId;
 
-    ST25TB_TRF7970A_Mode(1);
+    TRF7970A_mode(&ST25TB_TRF7970A_Mode_Initiator);
     LEDS_STATUS_Bitmask(0b000);
 
     for(i = 0; i < 3; i++)

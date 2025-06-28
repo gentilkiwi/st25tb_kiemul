@@ -6,6 +6,12 @@
 #pragma once
 #include "board.h"
 
+typedef struct _TRF7970A_MODE {
+    const uint8_t *seq;
+    const uint8_t cbSec;
+    const uint8_t delay;
+} TRF7970A_MODE, *PTRF7970A_MODE;
+
 #define TRF_ENABLE()        TRF_EN_PORT |= TRF_EN_BIT
 #define TRF_DISABLE()       TRF_EN_PORT &= ~TRF_EN_BIT
 
@@ -25,15 +31,17 @@
 #define TRF_SPI_RECV(r)     do{UCB1TXBUF = 0x00; TRF_SPI_WAIT_BUSY(); r = UCB1RXBUF;} while(0)   // More efficient than playing with RX/TX or IRQ...
 
 void TRF7970A_init();
+void TRF7970A_mode(const TRF7970A_MODE * pMode);
 void TRF7970A_SPI_Send_raw(const uint8_t *pcbData, uint8_t cbData);
 void TRF7970A_SPI_DirectCommand_internal(uint8_t CommandCode_Preparred);
 uint8_t TRF7970A_SPI_Read_SingleRegister_internal(uint8_t Register_Prepared);
 void TRF7970A_SPI_Write_SingleRegister_internal(uint8_t Register_Prepared, const uint8_t Value);
 void TRF7970A_SPI_Read_ContinuousRegister_internal(uint8_t Register_Prepared, uint8_t *pbData, uint8_t cbData);
 
-#define TRF7970A_SPI_Write_Packet(pcbData, cbData)  TRF7970A_SPI_Write_Packet_TYPED(pcbData, cbData, MK_DC(TRF79X0_TRANSMIT_CRC_CMD))
-#define TRF7970A_SPI_Write_Packet_NOCRC(pcbData, cbData)  TRF7970A_SPI_Write_Packet_TYPED(pcbData, cbData, MK_DC(TRF79X0_TRANSMIT_NO_CRC_CMD))
-void TRF7970A_SPI_Write_Packet_TYPED(const uint8_t *pcbData, uint8_t cbData, const uint8_t type);
+#define TRF7970A_SPI_Write_Packet(pcbData, cbData)              TRF7970A_SPI_Write_Packet_TYPED(pcbData, cbData, MK_DC(TRF79X0_TRANSMIT_CRC_CMD))
+#define TRF7970A_SPI_Write_Packet_NOCRC(pcbData, cbData)        TRF7970A_SPI_Write_Packet_TYPED(pcbData, cbData, MK_DC(TRF79X0_TRANSMIT_NO_CRC_CMD))
+#define TRF7970A_SPI_Write_Packet_TYPED(pcbData, cbData, type)  TRF7970A_SPI_Write_Packet_TYPED_BB(pcbData, cbData, type, 0)
+void TRF7970A_SPI_Write_Packet_TYPED_BB(const uint8_t *pcbData, uint8_t cbData, const uint8_t type, const uint8_t brokenBits);
 
 uint8_t TRF7970A_SPI_waitIrq();
 

@@ -13,7 +13,7 @@ void MODE_learn()
     {
         if(BP_IrqSource == IRQ_SOURCE_SW2) // to deal with first start and restart
         {
-            ST25TB_TRF7970A_Mode(1);
+            TRF7970A_mode(&ST25TB_TRF7970A_Mode_Initiator);
             LEDS_STATUS_Bitmask(0b000);
         }
 
