@@ -4,9 +4,6 @@
     Licence : https://creativecommons.org/licenses/by/4.0/
 */
 #pragma once
-#include "../cli.h"
+#include "14a.h"
 
-extern const CLI_MODULE CLI_14A_Module;
-
-void CLI_14A_info();
-void CLI_14A_emul();
+uint8_t K14A4_Rats();

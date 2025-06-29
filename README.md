@@ -2,9 +2,9 @@
 
 ST25TB / SRx NFC Emulator / Initiator based on TI TRF7970A with MSP430
 
-This is the support project of `ST25TB series NFC tags for fun in French public transports` ([ST25TB_transport.pdf](ST25TB_transport.pdf))
+This is the support project of `ST25TB series NFC tags for fun in French public transports` - [ST25TB_transport.pdf](https://raw.githubusercontent.com/gentilkiwi/st25tb_kiemul/main/ST25TB_transport.pdf)
 
-> **Note:** This project is **superseded** by `MSP430` [`st25tb_kameleon`](https://github.com/gentilkiwi/st25tb_kameleon) and its `RP2040` equivalent [`st25tb_kameleon_piko`](https://github.com/gentilkiwi/st25tb_kameleon_piko), both of which are more user-friendly.
+> **Note:** This project now supports `st25tb_kiemul`, `st25tb_kameleon` & `st25tb_kiwi` boards
 
 ## Project
 
@@ -18,7 +18,7 @@ You can reduce the code base but, at this time, the full project (emulator/write
 - `LP-MSP430FR2476` + `DLP-7970ABP` with configuration `Release - lp-msp430fr2476` - MSP @ 16 MHz, CR2032 battery compatible!
 - `*MSP430*` + `DLP-7970ABP` with new configuration to create (feel free to adapt :))
 
-Note: `MSP-EXP430F5529LP` + `DLP-7970ABP` is no longer supported by default. MSP430 devices with FRAM and a 16 MHz system clock are now preferred due to their simplicity and better compatibility.
+Note: `MSP-EXP430F5529LP` + `DLP-7970ABP` is no longer supported by default. MSP430 devices with FRAM and a 16 MHz system clock are now preferred due to their simplicity and better compatibility.
 
 ## Flash
 
