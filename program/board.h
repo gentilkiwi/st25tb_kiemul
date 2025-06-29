@@ -10,19 +10,17 @@
 
 #if defined(__MSP430FR2476__)
 #define ST25TB_BOARD_NAME       "ST25TB kiemul"
-#define ST25TB_BOARD_VERSION    "0.1"
 #define ST25TB_MCU_NAME         "MSP430FR2476"
 #elif defined(__MSP430FR2673__)
 #define ST25TB_BOARD_NAME       "ST25TB kameleon"
-#define ST25TB_BOARD_VERSION    "0.1"
 #define ST25TB_MCU_NAME         "MSP430FR2673"
 #elif defined(__MSP430FR2676__)
 #define ST25TB_BOARD_NAME       "ST25TB kiwi"
-#define ST25TB_BOARD_VERSION    "0.1"
 #define ST25TB_MCU_NAME         "MSP430FR2676"
 #else
 #error unknown board?
 #endif
+#define ST25TB_FW_VERSION       "2.1"
 
 #include "uart.h"
 #include "slots.h"

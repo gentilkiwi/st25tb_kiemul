@@ -39,7 +39,7 @@ const KAKI_MODE Modes_2[] = {
 
 #if !defined(__MSP430FR2673__)
 const char KIWI_BANNER[] =  "\x1b[2J\x1b[3J\x1b[H" UART_NEWLINE
-    "  .#####.         " ST25TB_BOARD_NAME " " ST25TB_BOARD_VERSION UART_NEWLINE
+    "  .#####.         " ST25TB_BOARD_NAME " (fw " ST25TB_FW_VERSION ")" UART_NEWLINE
     " .## ^ ##.__ _    TI " ST25TB_MCU_NAME " & TRF7970A" UART_NEWLINE
     " ## / \\ /   ('>-  /***" UART_NEWLINE
     " ## \\ / | K  |     Benjamin DELPY `gentilkiwi` ( benjamin@gentilkiwi.com )" UART_NEWLINE
