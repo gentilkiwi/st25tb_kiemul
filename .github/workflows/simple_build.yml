@@ -1,4 +1,4 @@
-name: MSP430 build
+name: MSP430
 on: [workflow_dispatch, push, pull_request]
 
 jobs:
