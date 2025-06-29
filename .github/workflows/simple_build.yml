@@ -69,7 +69,7 @@ jobs:
           --search_path=$COMPILER_CGT_PATH/lib --search_path=$CCS_COMPONENTS_PATH/lib \
           --cinit_compression=off \
           --output_file=${{matrix.BUILD_PROJECT}}.out \
-          --library=FR2xx/frwp_init.a --library=libc.a lnk_${{matrix.BUILD_MCU}}.cmd
+          --library=FR2xx/frwp_init.a --library=libc.a lnk_${PROJECT_MCU}.cmd
         
         hex430 --memwidth=8 --romwidth=8 --diag_wrap=off --intel --outfile=${{matrix.BUILD_PROJECT}}.hex ${{matrix.BUILD_PROJECT}}.out
         
