@@ -7,14 +7,14 @@ jobs:
     env:
       COMPILER_CGT_PATH: ${{github.workspace}}/ti-cgt-msp430_21.6.1.LTS
       CCS_COMPONENTS_PATH: ${{github.workspace}}/msp430_ccs_files
-      msp430fr2476: st25tb_kiemul
-      msp430fr2673: st25tb_kameleon
-      msp430fr2676: st25tb_kiwi
+      st25tb_kiemul: msp430fr2476
+      st25tb_kameleon: msp430fr2673
+      st25tb_kiwi: msp430fr2676
 
     strategy:
       fail-fast: false
       matrix:
-        BUILD_MCU: [msp430fr2476, msp430fr2673, msp430fr2676]
+        BUILD_PROJECT: [st25tb_kiemul, st25tb_kameleon, st25tb_kiwi]
 
     steps:
 
@@ -55,10 +55,7 @@ jobs:
       working-directory: ${{github.event.repository.name}}
       run: |
         C_FILES=( $(find . -name '*.c') )
-        PROJECT_MCU=${{matrix.BUILD_MCU}}
-        
-        PROJECT_NAME=${${{matrix.BUILD_MCU}}}
-        echo "PROJECT_NAME=$PROJECT_NAME" >> "$GITHUB_ENV"
+        PROJECT_MCU=${${{matrix.BUILD_PROJECT}}}
         
         cl430 --verbose --parallel=$(nproc) \
           --silicon_version=mspx --code_model=large --data_model=small --silicon_errata=CPU21 --silicon_errata=CPU22 --silicon_errata=CPU40 \
@@ -71,19 +68,19 @@ jobs:
           --heap_size=160 --stack_size=160 --cinit_hold_wdt=on --priority --reread_libs --warn_sections --rom_model \
           --search_path=$COMPILER_CGT_PATH/lib --search_path=$CCS_COMPONENTS_PATH/lib \
           --cinit_compression=off \
-          --output_file=$PROJECT_NAME.out \
+          --output_file=${{matrix.BUILD_PROJECT}}.out \
           --library=FR2xx/frwp_init.a --library=libc.a lnk_${{matrix.BUILD_MCU}}.cmd
         
-        hex430 --memwidth=8 --romwidth=8 --diag_wrap=off --intel --outfile=$PROJECT_NAME.hex $PROJECT_NAME.out
+        hex430 --memwidth=8 --romwidth=8 --diag_wrap=off --intel --outfile=${{matrix.BUILD_PROJECT}}.hex ${{matrix.BUILD_PROJECT}}.out
         
-        strip430 --postlink $PROJECT_NAME.out
+        strip430 --postlink ${{matrix.BUILD_PROJECT}}.out
         
         ls -al *.out *.hex
       
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: ${{env.PROJECT_NAME}}
+        name: ${{matrix.BUILD_PROJECT}}
         compression-level: 9
         path: |
           ${{github.event.repository.name}}/*.out
