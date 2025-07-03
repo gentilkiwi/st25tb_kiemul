@@ -6,10 +6,6 @@
 #pragma once
 #include "../board.h"
 
-#include "st25tb_target.h"
-#include "st25tb_initiator.h"
-#include "st25tb_utils.h"
-
 uint8_t ST25TB_Recv(uint8_t bIsinitiator, uint8_t irqProvided);
 uint8_t ST25TB_Send(const uint8_t *pcbData, const uint8_t cbData);
 
@@ -32,3 +28,7 @@ extern uint8_t g_ui8_ST25TB_Buffer[0x10];
 extern uint8_t g_ui8_cbST25TB_Buffer;
 
 extern const TRF7970A_MODE ST25TB_TRF7970A_Mode_Initiator, ST25TB_TRF7970A_Mode_Target;
+
+#include "st25tb_target.h"
+#include "st25tb_initiator.h"
+#include "st25tb_utils.h"

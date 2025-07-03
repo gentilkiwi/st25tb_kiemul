@@ -27,7 +27,7 @@ uint8_t ST25TB_Target_ResponseTo()
     {
     case ST25TB_CMD_INITIATE:
     //case ST25TB_CMD_PCALL16:
-        if((g_ui8_cbST25TB_Buffer == 2) && ((g_ui8_ST25TB_Buffer[1] == 0x00) || (g_ui8_ST25TB_Buffer[1]) == 4))
+        if((g_ui8_cbST25TB_Buffer == 2) && (g_ui8_ST25TB_Buffer[1] == 0x00))
         {
             pcbData = &st25tb_ui8ChipId;
             cbData = sizeof(st25tb_ui8ChipId);
@@ -35,15 +35,7 @@ uint8_t ST25TB_Target_ResponseTo()
         }
         break;
 
-    case 0x10 | ST25TB_CMD_SLOT_MARKER_MASK: // to *only* deal with Chip_slot_number 1
-        if(g_ui8_cbST25TB_Buffer == 1)
-        {
-            pcbData = &st25tb_ui8ChipId;
-            cbData = sizeof(st25tb_ui8ChipId);
-            delay = ST25TB_TARGET_DELAY_US_GLOBAL + ST25TB_TARGET_DELAY_US_MEDIUM;
-        }
-        break;
-
+    //case 0x10 | ST25TB_CMD_SLOT_MARKER_MASK: // to *only* deal with Chip_slot_number 1
     case ST25TB_CMD_SELECT:
         if((g_ui8_cbST25TB_Buffer == 2) && (g_ui8_ST25TB_Buffer[1] == st25tb_ui8ChipId))
         {
