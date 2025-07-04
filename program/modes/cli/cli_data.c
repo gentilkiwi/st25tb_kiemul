@@ -20,7 +20,6 @@ const CLI_FUNCTION CLI_DATA_Functions[] = {
     {.name = "emul",    .function = CLI_DATA_emul,      .description = "Emulate current data"},
 
     {.name = "save",    .function = CLI_SLOT_save,      .description = "> slot save"},
-
 };
 
 const CLI_MODULE CLI_DATA_Module = {.name = "data", .description = "Current data in RAM", .nbFunctions = count_of(CLI_DATA_Functions), .Functions = CLI_DATA_Functions};

@@ -16,6 +16,8 @@ const CLI_FUNCTION CLI_SLOT_Functions[] = {
 
     {.name = "save",    .function = CLI_SLOT_save,      .description = "Save current data in a slot (selected or index)"},
     {.name = "change",  .function = CLI_SLOT_change,    .description = "Change a slot"},
+
+    {.name = "trace",   .function = CLI_SLOT_trace,     .description = "List the current trace saved in FRAM"},
 };
 
 const CLI_MODULE CLI_SLOT_Module = {.name = "slot", .description = "Slots manipulation (FRAM stored)", .nbFunctions = count_of(CLI_SLOT_Functions), .Functions = CLI_SLOT_Functions};
@@ -127,5 +129,31 @@ void CLI_SLOT_change()
     }
 
     CLI_print_status(ret);
+}
+
+void CLI_SLOT_trace()
+{
+    uint16_t i = 0;
+    uint8_t c;
+
+    printf("Trace :" UART_NEWLINE "  buffer: %u" UART_NEWLINE "  count : %u" UART_NEWLINE UART_NEWLINE, sizeof(FlashStoredData.ST25TB_Trace), FlashStoredData.ST25TB_cbTrace);
+
+    if(CLI_NextArg())
+    {
+        SLOTS_Trace_Clear();
+        printf("> Reset!" UART_NEWLINE);
+    }
+    else if(FlashStoredData.ST25TB_cbTrace)
+    {
+        for(i = 0; i < FlashStoredData.ST25TB_cbTrace; )
+        {
+            c = FlashStoredData.ST25TB_Trace[i];
+            i += 1;
+            printf("%c ", (c & 0x80) ? '>' : '<');
+            c &= 0x7f;
+            kprinthex(FlashStoredData.ST25TB_Trace + i, c);
+            i += c;
+        }
+    }
 }
 #endif

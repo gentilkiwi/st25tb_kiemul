@@ -9,6 +9,8 @@ void MODE_emulate()
 {
     uint8_t bContinueStateMachine, bExitMode = 0, BP_IrqSource, TRF7970A_irqStatus;
 
+    SLOTS_Trace_Clear();
+
     do
     {
         TRF7970A_mode(&ST25TB_TRF7970A_Mode_Target);
@@ -40,4 +42,6 @@ void MODE_emulate()
         while (bContinueStateMachine);
     }
     while (!bExitMode);
+
+    SLOTS_Trace_Save();
 }

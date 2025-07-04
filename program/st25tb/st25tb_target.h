@@ -39,6 +39,6 @@ uint8_t ST25TB_Target_AdjustIdxForSpecialAddr(uint8_t original);
  * --opt_level=4 (Whole Program Optimizations)
  * --opt_for_speed=3 (Enables optimizations geared towards improving the code performance/speed with a low risk of worsening or impacting code size)
  */
-#define ST25TB_TARGET_DELAY_US_GLOBAL  91
+#define ST25TB_TARGET_DELAY_US_GLOBAL  89
 #define ST25TB_TARGET_DELAY_US_MEDIUM  11
 #define ST25TB_TARGET_DELAY_US_SMALL   3

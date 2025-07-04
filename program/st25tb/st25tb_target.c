@@ -137,5 +137,19 @@ uint8_t ST25TB_Target_ResponseTo()
         ret = 1;
     }
 
+    if(g_ui8_cbST25TB_Buffer < (sizeof(g_ui8_ST25TB_TraceBuffer) - g_ui16_cbST25TB_TraceBuffer))
+    {
+        g_ui8_ST25TB_TraceBuffer[g_ui16_cbST25TB_TraceBuffer++] = 0x00 | g_ui8_cbST25TB_Buffer;
+        memcpy(g_ui8_ST25TB_TraceBuffer + g_ui16_cbST25TB_TraceBuffer, g_ui8_ST25TB_Buffer, g_ui8_cbST25TB_Buffer);
+        g_ui16_cbST25TB_TraceBuffer += g_ui8_cbST25TB_Buffer;
+    }
+
+    if(pcbData && cbData && (cbData < (sizeof(g_ui8_ST25TB_TraceBuffer) - g_ui16_cbST25TB_TraceBuffer)))
+    {
+        g_ui8_ST25TB_TraceBuffer[g_ui16_cbST25TB_TraceBuffer++] = 0x80 | cbData;
+        memcpy(g_ui8_ST25TB_TraceBuffer + g_ui16_cbST25TB_TraceBuffer, pcbData, cbData);
+        g_ui16_cbST25TB_TraceBuffer += cbData;
+    }
+
     return ret;
 }

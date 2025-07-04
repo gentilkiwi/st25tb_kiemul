@@ -5,6 +5,8 @@
 */
 #include "slots.h"
 
+uint8_t SLOTS_ST25TB_Current[SLOTS_ST25TB_SECTORS_INTERNAL][4];
+
 uint8_t SLOTS_Change(uint8_t index)
 {
     uint8_t ret;
@@ -85,7 +87,29 @@ uint8_t SLOTS_FindByUID(uint8_t pui8Data[8]) // ret == SLOTS_FIND_INVALID_INDEX 
     return ret;
 }
 
-uint8_t SLOTS_ST25TB_Current[SLOTS_ST25TB_SECTORS_INTERNAL][4];
+uint8_t g_ui8_ST25TB_TraceBuffer[ST25TB_TRACE_BUFFER_SIZE];
+uint16_t g_ui16_cbST25TB_TraceBuffer = 0;
+
+void SLOTS_Trace_Save()
+{
+    uint8_t state = SYSCFG0_L;
+    SYSCFG0 = FWPW | (state & ~(DFWP | PFWP));
+    FlashStoredData.ST25TB_cbTrace = g_ui16_cbST25TB_TraceBuffer;
+    memcpy(FlashStoredData.ST25TB_Trace, g_ui8_ST25TB_TraceBuffer, g_ui16_cbST25TB_TraceBuffer);
+    SYSCFG0 = FWPW | state;
+    kprintf("|%s| - Saved trace for %u bytes" UART_NEWLINE, __FUNCTION__, g_ui16_cbST25TB_TraceBuffer);
+}
+
+void SLOTS_Trace_Clear()
+{
+    uint8_t state = SYSCFG0_L;
+    SYSCFG0 = FWPW | (state & ~(DFWP | PFWP));
+    FlashStoredData.ST25TB_cbTrace = 0;
+    memset(FlashStoredData.ST25TB_Trace, 0, ST25TB_TRACE_BUFFER_SIZE);
+    SYSCFG0 = FWPW | state;
+    g_ui16_cbST25TB_TraceBuffer = 0;
+    kprintf("|%s| - Cleared trace" UART_NEWLINE, __FUNCTION__);
+}
 
 #pragma PERSISTENT(FlashStoredData)
 /*const */FLASH_STORED_DATA FlashStoredData = {
@@ -182,5 +206,7 @@ uint8_t SLOTS_ST25TB_Current[SLOTS_ST25TB_SECTORS_INTERNAL][4];
             #endif
         },
     #endif
-    }
+    },
+    .ST25TB_cbTrace = 0,
+    //.ST25TB_Trace
 };

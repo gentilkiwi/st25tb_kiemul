@@ -6,6 +6,9 @@
 #pragma once
 #include "../board.h"
 
+extern uint8_t g_ui8_ST25TB_Buffer[0x10];
+extern uint8_t g_ui8_cbST25TB_Buffer;
+
 uint8_t ST25TB_Recv(uint8_t bIsinitiator, uint8_t irqProvided);
 uint8_t ST25TB_Send(const uint8_t *pcbData, const uint8_t cbData);
 
@@ -23,9 +26,6 @@ uint8_t ST25TB_Send(const uint8_t *pcbData, const uint8_t cbData);
 #define ST25TB_CMD_RESET_TO_INVENTORY   0x0c
 #define ST25TB_CMD_SELECT               0x0e
 #define ST25TB_CMD_COMPLETION           0x0f
-
-extern uint8_t g_ui8_ST25TB_Buffer[0x10];
-extern uint8_t g_ui8_cbST25TB_Buffer;
 
 extern const TRF7970A_MODE ST25TB_TRF7970A_Mode_Initiator, ST25TB_TRF7970A_Mode_Target;
 

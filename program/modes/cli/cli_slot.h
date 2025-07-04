@@ -14,3 +14,4 @@ void CLI_SLOT_show();
 void CLI_SLOT_dump();
 void CLI_SLOT_save();
 void CLI_SLOT_change();
+void CLI_SLOT_trace();
