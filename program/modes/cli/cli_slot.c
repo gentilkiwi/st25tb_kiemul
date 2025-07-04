@@ -131,6 +131,72 @@ void CLI_SLOT_change()
     CLI_print_status(ret);
 }
 
+
+void CLI_SLOT_trace_desc(uint8_t cb, uint8_t *data)
+{
+    char *rep = "?";
+
+    if (!(cb & 0x80))
+    {
+        cb &= 0x7f;
+        if (cb == 2)
+        {
+            if (data[0] == ST25TB_CMD_INITIATE)
+            {
+                if (data[1] == 0x00)
+                {
+                    rep = "INITIATE";
+                }
+                else if (data[1] == 0x04)
+                {
+                    rep = "PCALL16";
+                }
+            }
+            else if(data[0] == ST25TB_CMD_SELECT)
+            {
+                printf("SELECT: %hu/0x%hx", data[1], data[1]);
+                rep = NULL;
+            }
+            else if(data[0] == ST25TB_CMD_READ_BLOCK)
+            {
+                printf("READ_BLOCK : %3hu/0x%02X", data[1], data[1]);
+                rep = NULL;
+            }
+        }
+        else if(cb == 1)
+        {
+            if(data[0] == ST25TB_CMD_GET_UID)
+            {
+                rep = "GET_UID";
+            }
+            else if(data[0] == ST25TB_CMD_RESET_TO_INVENTORY)
+            {
+                rep = "RESET_TO_INVENTORY";
+            }
+            else if(data[0] == ST25TB_CMD_COMPLETION)
+            {
+                rep = "COMPLETION";
+            }
+            else if(data[0] == ST25TB_CMD_AUTHENTICATE)
+            {
+                rep = "AUTHENTICATE(?)";
+            }
+            else if((data[0] & ST25TB_CMD_SLOT_MARKER_MASK) == ST25TB_CMD_SLOT_MARKER_MASK)
+            {
+                printf("SLOT_MARKER_MASK: %hu/0x%hx", data[0] >> 4, data[0] >> 4);
+                rep = NULL;
+            }
+        }
+        else if((cb == 6) && (data[0] == ST25TB_CMD_WRITE_BLOCK))
+        {
+            printf("WRITE_BLOCK: %3hu/0x%02X | %02hX %02hX %02hX %02hX | %02hX%02hX%02hX%02hX", data[1], data[1], data[2], data[3], data[4], data[5], data[5], data[4], data[3], data[2]);
+            rep = NULL;
+        }
+
+        printf("%s ; ", rep ? rep : "");
+    }
+}
+
 void CLI_SLOT_trace()
 {
     uint16_t i = 0;
@@ -150,6 +216,7 @@ void CLI_SLOT_trace()
             c = FlashStoredData.ST25TB_Trace[i];
             i += 1;
             printf("%c ", (c & 0x80) ? '>' : '<');
+            CLI_SLOT_trace_desc(c, FlashStoredData.ST25TB_Trace + i);
             c &= 0x7f;
             kprinthex(FlashStoredData.ST25TB_Trace + i, c);
             i += c;
