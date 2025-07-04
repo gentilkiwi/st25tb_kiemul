@@ -92,12 +92,18 @@ uint16_t g_ui16_cbST25TB_TraceBuffer = 0;
 
 void SLOTS_Trace_Save()
 {
-    uint8_t state = SYSCFG0_L;
-    SYSCFG0 = FWPW | (state & ~(DFWP | PFWP));
-    FlashStoredData.ST25TB_cbTrace = g_ui16_cbST25TB_TraceBuffer;
-    memcpy(FlashStoredData.ST25TB_Trace, g_ui8_ST25TB_TraceBuffer, g_ui16_cbST25TB_TraceBuffer);
-    SYSCFG0 = FWPW | state;
-    kprintf("|%s| - Saved trace for %u bytes" UART_NEWLINE, __FUNCTION__, g_ui16_cbST25TB_TraceBuffer);
+    uint8_t state;
+
+    if(g_ui16_cbST25TB_TraceBuffer)
+    {
+        state = SYSCFG0_L;
+        SYSCFG0 = FWPW | (state & ~(DFWP | PFWP));
+        FlashStoredData.ST25TB_cbTrace = g_ui16_cbST25TB_TraceBuffer;
+        memcpy(FlashStoredData.ST25TB_Trace, g_ui8_ST25TB_TraceBuffer, g_ui16_cbST25TB_TraceBuffer);
+        SYSCFG0 = FWPW | state;
+        g_ui16_cbST25TB_TraceBuffer = 0;
+        kprintf("|%s| - Saved trace for %u bytes" UART_NEWLINE, __FUNCTION__, g_ui16_cbST25TB_TraceBuffer);
+    }
 }
 
 void SLOTS_Trace_Clear()

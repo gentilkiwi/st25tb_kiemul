@@ -9,7 +9,7 @@ void MODE_emulate()
 {
     uint8_t bContinueStateMachine, bExitMode = 0, BP_IrqSource, TRF7970A_irqStatus;
 
-    SLOTS_Trace_Clear();
+    g_ui16_cbST25TB_TraceBuffer = 0;
 
     do
     {

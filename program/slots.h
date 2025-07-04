@@ -89,7 +89,7 @@ uint8_t SLOTS_FindByUID(uint8_t pui8Data[8]); // ret == SLOTS_FIND_INVALID_INDEX
 #define SLOTS_Load_Current()        SLOTS_Load(FlashStoredData.CurrentSlot)
 #define SLOTS_Save_Current()        SLOTS_Save(FlashStoredData.CurrentSlot)
 
-#define ST25TB_TRACE_BUFFER_SIZE    2048
+#define ST25TB_TRACE_BUFFER_SIZE    3072
 extern uint8_t g_ui8_ST25TB_TraceBuffer[ST25TB_TRACE_BUFFER_SIZE];
 extern uint16_t g_ui16_cbST25TB_TraceBuffer;
 
