@@ -101,8 +101,8 @@ void SLOTS_Trace_Save()
         FlashStoredData.ST25TB_cbTrace = g_ui16_cbST25TB_TraceBuffer;
         memcpy(FlashStoredData.ST25TB_Trace, g_ui8_ST25TB_TraceBuffer, g_ui16_cbST25TB_TraceBuffer);
         SYSCFG0 = FWPW | state;
-        g_ui16_cbST25TB_TraceBuffer = 0;
         kprintf("|%s| - Saved trace for %u bytes" UART_NEWLINE, __FUNCTION__, g_ui16_cbST25TB_TraceBuffer);
+        g_ui16_cbST25TB_TraceBuffer = 0;
     }
 }
 
