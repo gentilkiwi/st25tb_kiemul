@@ -79,16 +79,24 @@ uint8_t K14A3_Anticoll(uint16_t *pATQA, uint8_t *pUID, uint8_t *pcbUID, uint8_t 
                 if ((ret == IRQ_SOURCE_NONE) && (*pSAK & 0x04))
                 {
                     ret = K14A3_Anticoll_CL(K14A_SDD_REQ_CL2, pUID, pSAK, pcbUID);
-                    if (ret == IRQ_SOURCE_NONE && (*pSAK & 0x04))
+                    if ((ret == IRQ_SOURCE_NONE) && (*pSAK & 0x04))
                     {
                         ret = K14A3_Anticoll_CL(K14A_SDD_REQ_CL3, pUID, pSAK, pcbUID);
-                        if (ret == IRQ_SOURCE_NONE && (*pSAK & 0x04))
+                        if ((ret == IRQ_SOURCE_NONE) && (*pSAK & 0x04))
                         {
                             ret = IRQ_SOURCE_ST25TB_PROTOCOL_ERR; // not valid at this point
                         }
                     }
                 }
             }
+            else
+            {
+                ret = IRQ_SOURCE_ST25TB_PROTOCOL_ERR;
+            }
+        }
+        else
+        {
+            ret = IRQ_SOURCE_ST25TB_PROTOCOL_ERR;
         }
     }
 
