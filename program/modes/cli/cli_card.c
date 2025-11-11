@@ -323,8 +323,10 @@ void CLI_CARD_rdbl()
     {
         if(CLI_CARD_Get())
         {
-            CLI_CARD_CMD_Read_Block(blockNumber, Value);
-            st25tb_utils_Display_sector_data(Value, blockNumber);
+            if(CLI_CARD_CMD_Read_Block(blockNumber, Value))
+            {
+                st25tb_utils_Display_sector_data(Value, blockNumber);
+            }
             CLI_CARD_leave();
         }
     }
