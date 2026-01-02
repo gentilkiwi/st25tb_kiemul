@@ -1,6 +1,8 @@
 .ccsproject
 .launches/
 .settings/
+.clangd
+launch.json
 program/private_*
 program/*.data
 targetConfigs/
