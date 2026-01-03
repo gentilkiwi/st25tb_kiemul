@@ -15,15 +15,15 @@ int UART_open(const char *path, unsigned flags, int llv_fd)
     return 0;
 }
 
-int UART_close(int dev_fd)
-{
-    return 0;
-}
-
-int UART_read(int dev_fd, char *buf, unsigned count)
-{
-    return EOF;
-}
+//int UART_close(int dev_fd)
+//{
+//    return 0;
+//}
+//
+//int UART_read(int dev_fd, char *buf, unsigned count)
+//{
+//    return EOF;
+//}
 
 void UART_TX(const uint8_t transmitData)
 {
@@ -43,20 +43,20 @@ int UART_write(int dev_fd, const char *buf, unsigned count)
     return count;
 }
 
-off_t UART_lseek(int dev_fd, off_t offset, int origin)
-{
-    return (off_t) -1;
-}
-
-int UART_unlink(const char *path)
-{
-    return -1;
-}
-
-int UART_rename(const char *old_name, const char *new_name)
-{
-    return -1;
-}
+//off_t UART_lseek(int dev_fd, off_t offset, int origin)
+//{
+//    return (off_t) -1;
+//}
+//
+//int UART_unlink(const char *path)
+//{
+//    return -1;
+//}
+//
+//int UART_rename(const char *old_name, const char *new_name)
+//{
+//    return -1;
+//}
 
 void UART_Redirect_std()
 {
