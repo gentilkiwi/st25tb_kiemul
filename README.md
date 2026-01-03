@@ -15,7 +15,7 @@ This is the support project for `ST25TB series NFC tags for fun in French public
 ## Supported configurations
 
 ### Initial
-- `LP-MSP430FR2476` + `DLP-7970ABP` with configuration `Release - lp-msp430fr2476` - MSP @ 16 MHz, CR2032 battery compatible!
+- `LP-MSP430FR2476` + `DLP-7970ABP` with configuration `st25tb_kiemul` - MSP @ 16 MHz, CR2032 battery compatible!
 - `*MSP430*` + `DLP-7970ABP` with new configuration to create (feel free to adapt :))
 
 Do **NOT** underestimate this basic configuration. Despite the lack of led indicators: `MSP430FR2476` has a _lot_ of FRAM memory, the integrated `eZ-FET lite` provides the same CLI as the most recent boards.
