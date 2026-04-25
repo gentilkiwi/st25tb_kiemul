@@ -19,12 +19,12 @@ jobs:
     steps:
 
     - name: Checkout project
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       with:
         path: ${{github.event.repository.name}}
 
     - name: Checkout Texas Instruments MSP430 Code Composer Studio files
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       with:
         repository: gentilkiwi/msp430_ccs_files
         path: msp430_ccs_files
@@ -39,7 +39,7 @@ jobs:
     
 #    - name: Cache RTS library (sc/sd - libc.a)
 #      id: cache-lib
-#      uses: actions/cache@v4
+#      uses: actions/cache@v5
 #      with:
 #        path: ${{env.COMPILER_CGT_PATH}}/lib/rts430x_sc_sd_eabi.lib
 #        key: rts-${{ hashFiles(format('{0}/lib/src/**', env.COMPILER_CGT_PATH)) }}
@@ -78,7 +78,7 @@ jobs:
         ls -al *.out *.hex
       
     - name: Upload artifacts
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: ${{matrix.BUILD_PROJECT}}
         compression-level: 9
