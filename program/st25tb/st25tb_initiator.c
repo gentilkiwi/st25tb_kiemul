@@ -198,7 +198,6 @@ uint8_t ST25TB_Initiator_CMD_Initiate(uint8_t *pui8ChipId)
         if (g_ui8_cbST25TB_Buffer == 1)
         {
             *pui8ChipId = *g_ui8_ST25TB_Buffer;
-            ret = IRQ_SOURCE_NONE;
         }
         else
         {
@@ -216,11 +215,7 @@ uint8_t ST25TB_Initiator_CMD_Select(const uint8_t ui8ChipId)
     ret = ST25TB_Initiator_SendRecv(ST25TB_Initiator_CMD_Select_data, sizeof(ST25TB_Initiator_CMD_Select_data), ST25TB_INITIATOR_TIMEOUT_SELECT);
     if (ret == IRQ_SOURCE_NONE)
     {
-        if((g_ui8_cbST25TB_Buffer == 1) && (ui8ChipId == g_ui8_ST25TB_Buffer[0]))
-        {
-            ret = IRQ_SOURCE_NONE;
-        }
-        else
+        if(!((g_ui8_cbST25TB_Buffer == 1) && (ui8ChipId == g_ui8_ST25TB_Buffer[0])))
         {
             ret = IRQ_SOURCE_ST25TB_PROTOCOL_ERR;
         }
@@ -240,7 +235,6 @@ uint8_t ST25TB_Initiator_CMD_Get_Uid(uint8_t pui8Data[8])
         if (g_ui8_cbST25TB_Buffer == sizeof(uint64_t))
         {
             *(uint64_t *) pui8Data = *(uint64_t *) g_ui8_ST25TB_Buffer;
-            ret = IRQ_SOURCE_NONE;
         }
         else
         {
@@ -315,7 +309,6 @@ uint8_t ST25TB_Initiator_CMD_Read_Block(const uint8_t ui8BlockIdx, uint8_t pui8D
         if(g_ui8_cbST25TB_Buffer == sizeof(uint32_t))
         {
             *((uint32_t *) pui8Data) = *(uint32_t *) g_ui8_ST25TB_Buffer;
-            ret = IRQ_SOURCE_NONE;
         }
         else
         {

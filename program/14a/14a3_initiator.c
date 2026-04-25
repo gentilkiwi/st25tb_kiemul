@@ -21,7 +21,7 @@ uint8_t K14A3_Anticoll_CL(uint8_t cl, uint8_t UID[10], uint8_t *pSAK, uint8_t *p
     {
         if(g_ui8_cb14a_Buffer == 5)
         {
-            if(g_ui8_14a_Buffer[0] ^ g_ui8_14a_Buffer[1] ^ g_ui8_14a_Buffer[2] ^ g_ui8_14a_Buffer[3] ==  g_ui8_14a_Buffer[4])
+            if((g_ui8_14a_Buffer[0] ^ g_ui8_14a_Buffer[1] ^ g_ui8_14a_Buffer[2] ^ g_ui8_14a_Buffer[3]) ==  g_ui8_14a_Buffer[4])
             {
                 recIdx = (g_ui8_14a_Buffer[0] == K14A_CASCADE_TAG);
                 memcpy(UID + *pUIDIdx, g_ui8_14a_Buffer + recIdx, 4 - recIdx);
