@@ -46,7 +46,7 @@ void MODE_learn()
                 bNeedToReload = 1;
             }
         }
-#if defined(__MSP430FR2673__) || defined(__MSP430FR2676__)
+#if defined(ST25TB_HAVE_FULL_LEDS)
         if(BP_IrqSource & IRQ_SOURCE_SW2)
         {
             index++;

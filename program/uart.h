@@ -4,10 +4,10 @@
     Licence : https://creativecommons.org/licenses/by/4.0/
 */
 #pragma once
-#include <msp430.h>
-#include <stdint.h>
-#if !defined(__MSP430FR2673__)
+#include "board.h"
+#if defined(ST25TB_HAVE_CLI)
 #include <stdio.h>
+#include <inttypes.h>
 
 extern uint8_t UART_Enabled;
 

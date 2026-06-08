@@ -8,7 +8,7 @@
 void MODE_select()
 {
     uint8_t BP_IrqSource, index = FlashStoredData.CurrentSlot;
-#if defined(__MSP430FR2476__)
+#if !defined(ST25TB_HAVE_FULL_LEDS)
     LEDS_STATUS_Bitmask(index);
 #endif
     do
@@ -22,7 +22,7 @@ void MODE_select()
                 index = 0;
             }
             SLOTS_Change(index);
-#if defined(__MSP430FR2476__)
+#if !defined(ST25TB_HAVE_FULL_LEDS)
             LEDS_STATUS_Bitmask(index);
 #endif
             TIMER_delay_Milliseconds(150);

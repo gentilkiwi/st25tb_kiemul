@@ -6,9 +6,12 @@
 #include "board.h"
 
 volatile uint8_t IRQ_Global = IRQ_SOURCE_NONE;
-#if !defined(__MSP430FR2673__)
+#if defined(ST25TB_HAVE_CLI)
 char UART_RX_BUFFER[0x300];
 uint16_t cbRxBuffer = 0;
+#if defined(STM32F405xx)
+volatile uint8_t isUSBCDCWanted = 0;
+#endif
 #endif
 
 void BOARD_init()
@@ -191,7 +194,7 @@ void BOARD_init()
     P4IE = BIT2;
 #endif
 
-#if !defined(__MSP430FR2673__)
+#if defined(ST25TB_HAVE_CLI)
     /*
      * UART Primary function on P1.4 & P1.5
      */
@@ -219,7 +222,7 @@ void BOARD_init()
     UCB1CTLW0 &= ~UCSWRST;
 }
 
-#if !defined(__MSP430FR2673__)
+#if defined(ST25TB_HAVE_CLI)
 void ADC_TEMP_Enable()
 {
     PMMCTL0_H = PMMPW_H;
@@ -326,7 +329,7 @@ uint8_t IRQ_Wait_for(uint8_t IRQWanted, uint8_t *pTRF7970A_irqStatus, uint16_t t
     {
         TIMER_start_Milliseconds(timeout_ms);
     }
-#if !defined(__MSP430FR2673__)
+#if defined(ST25TB_HAVE_CLI)
     if(IRQWanted & IRQ_SOURCE_UART_RX)
     {
         IRQ_Global &= ~IRQ_SOURCE_UART_RX;
@@ -350,7 +353,7 @@ uint8_t IRQ_Wait_for(uint8_t IRQWanted, uint8_t *pTRF7970A_irqStatus, uint16_t t
     {
         TIMER_stop();
     }
-#if !defined(__MSP430FR2673__)
+#if defined(ST25TB_HAVE_CLI)
     if(IRQWanted & IRQ_SOURCE_UART_RX)
     {
         UART_DISABLE_RX_IRQ();
@@ -471,7 +474,7 @@ __interrupt void TIMERA0_ISR (void)
     __low_power_mode_off_on_exit();
 }
 
-#if !defined(__MSP430FR2673__)
+#if defined(ST25TB_HAVE_CLI)
 /*
  * Interrupt vector for EUSCI AO (UART RX)
  */

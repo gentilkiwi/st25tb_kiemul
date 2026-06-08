@@ -35,7 +35,7 @@ void MODE_detect()
                 if(index != SLOTS_FIND_INVALID_INDEX)
                 {
                     SLOTS_Change(index);
-#if defined(__MSP430FR2476__) // we don't show the slot with a LED here, so we use LED_BLUE to signal
+#if !defined(ST25TB_HAVE_FULL_LEDS) // we don't show the slot with a LED here, so we use LED_BLUE to signal
                     LED_ON(LED_INDEX_STATUS_BLUE);
 #endif
                     kprintf("|%s| Detected in slot %hu" UART_NEWLINE, __FUNCTION__, index);

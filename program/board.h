@@ -11,16 +11,29 @@
 #if defined(__MSP430FR2476__)
 #define ST25TB_BOARD_NAME       "ST25TB kiemul"
 #define ST25TB_MCU_NAME         "MSP430FR2476"
+
+#define ST25TB_HAVE_CLI
 #elif defined(__MSP430FR2673__)
 #define ST25TB_BOARD_NAME       "ST25TB kameleon"
 #define ST25TB_MCU_NAME         "MSP430FR2673"
+
+#define ST25TB_HAVE_FULL_LEDS
 #elif defined(__MSP430FR2676__)
 #define ST25TB_BOARD_NAME       "ST25TB kiwi"
 #define ST25TB_MCU_NAME         "MSP430FR2676"
+
+#define ST25TB_HAVE_CLI
+#define ST25TB_HAVE_FULL_LEDS
+#elif defined(STM32F405xx)
+#define ST25TB_BOARD_NAME       "ST25TB kameleon"
+#define ST25TB_MCU_NAME         "HydraBus (STM32F405)"
+
+#define ST25TB_HAVE_CLI
+#define ST25TB_HAVE_FULL_LEDS
 #else
 #error unknown board?
 #endif
-#define ST25TB_FW_VERSION       "2.1"
+#define ST25TB_FW_VERSION       "2.2"
 
 #include "uart.h"
 #include "slots.h"
@@ -29,14 +42,12 @@
 #include "trf7970a.h"
 
 extern volatile uint8_t IRQ_Global;
-#if !defined(__MSP430FR2673__)
-extern char UART_RX_BUFFER[0x300];
-extern uint16_t cbRxBuffer;
-#endif
 
 void BOARD_init();
 
-#if !defined(__MSP430FR2673__)
+#if defined(ST25TB_HAVE_CLI)
+extern char UART_RX_BUFFER[0x300];
+extern uint16_t cbRxBuffer;
 void ADC_TEMP_Enable();
 void ADC_TEMP_Disable();
 uint16_t ADC_TEMP_Get_RAW();
@@ -63,7 +74,7 @@ void TIMER_delay_Microseconds_internal(uint16_t n_unit_us); // max is UINT16_MAX
 #define IRQ_SOURCE_SW2                  0x04
 #define IRQ_SOURCE_TIMER                0x08
 #define IRQ_SOURCE_ST25TB_PROTOCOL_ERR  0x10
-#if !defined(__MSP430FR2673__)
+#if defined(ST25TB_HAVE_CLI)
 #define IRQ_SOURCE_UART_RX              0x20
 #endif
 
@@ -74,7 +85,7 @@ uint8_t IRQ_Wait_for(uint8_t IRQWanted, uint8_t *pTRF7970A_irqStatus, uint16_t t
 #define SW1_IS_PRESSED()                (!(SW1_PORT & SW1_BIT))
 #define SW2_IS_PRESSED()                (!(SW2_PORT & SW2_BIT))
 
-#if !defined(__MSP430FR2673__)
+#if defined(ST25TB_HAVE_CLI)
 #define UART_ENABLE_RX_IRQ()            do{ UCA0IE = UCRXIE_1 ;} while(0)
 #define UART_DISABLE_RX_IRQ()           do{ UCA0IE = 0; } while(0)
 

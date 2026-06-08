@@ -4,7 +4,7 @@
     Licence : https://creativecommons.org/licenses/by/4.0/
 */
 #include "cli_std.h"
-#if !defined(__MSP430FR2673__)
+#if defined(ST25TB_HAVE_CLI)
 void CLI_STD_test();
 
 const CLI_FUNCTION CLI_STD_Functions[] = {
@@ -77,7 +77,7 @@ void CLI_STD_memory()
         {
             len = strtoul(strToken, NULL, 0);
         }
-        printf("Memory @ 0x%lx for %u byte(s)" UART_NEWLINE, addr, len);
+        printf("Memory @ 0x%" PRIxPTR " for %u byte(s)" UART_NEWLINE, addr, len);
         kprinthex(*(const void **) &addr, len);
     }
     else printf("Need a memory address, like 0x8000" UART_NEWLINE);

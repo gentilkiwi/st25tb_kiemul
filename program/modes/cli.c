@@ -4,7 +4,7 @@
     Licence : https://creativecommons.org/licenses/by/4.0/
 */
 #include "cli.h"
-#if !defined(__MSP430FR2673__)
+#if defined(ST25TB_HAVE_CLI)
 #include "cli/cli_std.h"
 #include "cli/cli_config.h"
 #include "cli/cli_dump.h"

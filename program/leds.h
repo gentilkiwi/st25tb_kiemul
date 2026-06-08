@@ -11,7 +11,7 @@ typedef struct _LED {
     uint8_t bit;
 } LED, *PLED;
 
-#if defined(__MSP430FR2476__)
+#if !defined(ST25TB_HAVE_FULL_LEDS)
 #define LED_OFFSET_STATUS_BLUE          2
 #define LED_OFFSET_STATUS_GREEN         0
 #define LED_OFFSET_STATUS_RED           1
@@ -24,7 +24,7 @@ typedef struct _LED {
 #define NB_LEDS_STATUS  3
 
 #define LEDS_SLOTS_Bitmask(bitmask)     //
-#elif defined(__MSP430FR2673__) || defined(__MSP430FR2676__)
+#else
 #define LED_OFFSET_STATUS_BLUE          0
 #define LED_OFFSET_STATUS_GREEN         1
 #define LED_OFFSET_STATUS_RED           2

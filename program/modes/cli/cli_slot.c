@@ -4,7 +4,7 @@
     Licence : https://creativecommons.org/licenses/by/4.0/
 */
 #include "cli_slot.h"
-#if !defined(__MSP430FR2673__)
+#if defined(ST25TB_HAVE_CLI)
 #include "cli_data.h"
 
 const CLI_FUNCTION CLI_SLOT_Functions[] = {

@@ -6,7 +6,7 @@
 #include "board.h"
 #include "modes.h"
 
-#if defined(__MSP430FR2476__)
+#if !defined(ST25TB_HAVE_FULL_LEDS)
 const KAKI_MODE Modes[] = {
     {.function = MODE_emulate,  .ledsModesBitmask = 0b01,       .Name = "Emulate"},
     {.function = MODE_rewrite,  .ledsModesBitmask = 0b10,       .Name = "Rewrite"},
@@ -19,7 +19,7 @@ const KAKI_MODE Modes_2[] = {
     {.function = MODE_tear,     .ledsModesBitmask = 0b00,       .Name = "Tear!"},
     {.function = MODE_cli,      .ledsModesBitmask = 0b00,       .Name = "CLI"},
 };
-#elif defined(__MSP430FR2673__) || defined(__MSP430FR2676__)
+#else
 const KAKI_MODE Modes[] = {
     {.function = MODE_emulate,  .ledsModesBitmask = 1 << 0,     .Name = "Emulate"},
     {.function = MODE_rewrite,  .ledsModesBitmask = 1 << 1,     .Name = "Rewrite"},
@@ -31,16 +31,16 @@ const KAKI_MODE Modes[] = {
 const KAKI_MODE Modes_2[] = {
     {.function = MODE_learn,    .ledsModesBitmask = 1 << 3,     .Name = "Learn"},
     {.function = MODE_tear,     .ledsModesBitmask = 1 << 4,     .Name = "Tear!"},
-#if !defined(__MSP430FR2673__)
+#if defined(ST25TB_HAVE_CLI)
     {.function = MODE_cli,      .ledsModesBitmask = 0b10101,    .Name = "CLI"},
 #endif
 };
 #endif
 
-#if !defined(__MSP430FR2673__)
+#if defined(ST25TB_HAVE_CLI)
 const char KIWI_BANNER[] =  "\x1b[2J\x1b[3J\x1b[H" UART_NEWLINE
     "  .#####.         " ST25TB_BOARD_NAME " (fw " ST25TB_FW_VERSION ")" UART_NEWLINE
-    " .## ^ ##.__ _    TI " ST25TB_MCU_NAME " & TRF7970A" UART_NEWLINE
+    " .## ^ ##.__ _    " ST25TB_MCU_NAME " & TRF7970A" UART_NEWLINE
     " ## / \\ /   ('>-  /***" UART_NEWLINE
     " ## \\ / | K  |     Benjamin DELPY `gentilkiwi` ( benjamin@gentilkiwi.com )" UART_NEWLINE
     " '## v #\\____/" UART_NEWLINE
@@ -50,7 +50,7 @@ const char KIWI_BANNER[] =  "\x1b[2J\x1b[3J\x1b[H" UART_NEWLINE
 void main(void)
 {
     uint8_t maxModes;
-#if !defined(__MSP430FR2673__)
+#if defined(ST25TB_HAVE_CLI)
     uint16_t calculatedCRC;
 #endif
     const KAKI_MODE *pMode, *cMode;
@@ -60,22 +60,34 @@ void main(void)
     LEDS_Animation();
     SLOTS_Change(FlashStoredData.CurrentSlot);
 
-#if !defined(__MSP430FR2673__)
+#if defined(ST25TB_HAVE_CLI)
     UART_Redirect_std();
 
     puts(KIWI_BANNER);
 
+#if defined(__msp430)
     calculatedCRC = CRC16_CCIT((const uint8_t *)(TLVMEM_START + 0x04), 0xf4);
 
-    printf("CRC Value   : r:0x%04x c:0x%04x - %s" UART_NEWLINE
-            "Device ID   : 0x%04x" UART_NEWLINE
-            "Lot wafer ID: 0x%08lx (x:%u/y:%u)" UART_NEWLINE
-            "SYSRSTIV    : 0x%04x" UART_NEWLINE
+    printf("CRC Value   : r:0x%04" PRIx16 " c:0x%04" PRIx16 " - %s" UART_NEWLINE
+            "Device ID   : 0x%04" PRIx16 UART_NEWLINE
+            "Lot wafer ID: 0x%08" PRIx32 " (x:%" PRIu16 "/y:%" PRIu16 ")" UART_NEWLINE
+            "SYSRSTIV    : 0x%04" PRIx16 UART_NEWLINE
             , CRC_VALUE, calculatedCRC, (CRC_VALUE == calculatedCRC) ? "OK" : "KO"
             , DEVICE_ID
             , DIE_LOT_WAFER_ID, DIE_LOT_WAFER_X_POS, DIE_LOT_WAFER_Y_POS
             , SYSRSTIV
     );
+#elif defined(STM32F405xx)
+    printf("Device ID   : 0x%04" PRIx32 " rev: 0x%04" PRIx32 UART_NEWLINE
+    		"Flash size  : %" PRIu16 " Kbytes" UART_NEWLINE
+			"Device UID  : 0x%08" PRIx32 "%08" PRIx32 "%08" PRIx32 UART_NEWLINE
+			"SysClockFreq: %" PRIu32 " kHz" UART_NEWLINE
+			, HAL_GetDEVID(), HAL_GetREVID()
+			, *(const uint16_t*)FLASHSIZE_BASE
+			, HAL_GetUIDw0(), HAL_GetUIDw1(), HAL_GetUIDw2()
+			, HAL_RCC_GetSysClockFreq() / 1000
+	);
+#endif
 #endif
 
     if(!SW1_IS_PRESSED()) // LEARN & TEAR only available if pushing MODE at startup
@@ -89,7 +101,7 @@ void main(void)
         maxModes = count_of(Modes_2);
     }
 
-#if !defined(__MSP430FR2673__)
+#if defined(ST25TB_HAVE_CLI)
     if(SW2_IS_PRESSED()) // override stored config
     {
         UART_Enabled = 1;
@@ -98,8 +110,8 @@ void main(void)
     printf(
             UART_NEWLINE "ST25TB board mode      : %s" UART_NEWLINE
             "ST25TB board UART      : %s" UART_NEWLINE
-            "ST25TB Current Slot    : %hu" UART_NEWLINE
-            "ST25TB Total slots     : %hu" UART_NEWLINE
+            "ST25TB Current Slot    : %" PRIu8 UART_NEWLINE
+            "ST25TB Total slots     : %u" UART_NEWLINE
             "ST25TB support for     : "
 #if defined(SLOTS_ST25TB_SUPPORT_4K)
             "4Kb"

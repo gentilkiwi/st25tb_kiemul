@@ -71,10 +71,10 @@ uint8_t TRF7970A_SPI_Read_SingleRegister_internal(uint8_t Register_Prepared)
 
 void TRF7970A_SPI_Write_SingleRegister_internal(uint8_t Register_Prepared, const uint8_t Value)
 {
+
     TRF_CS_ENABLE();
     TRF_SPI_SEND(Register_Prepared);
     TRF_SPI_SEND(Value);
-
     TRF_CS_DISABLE();
 }
 

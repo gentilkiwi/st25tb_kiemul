@@ -5,7 +5,7 @@
 */
 #include "field.h"
 
-#if defined(__MSP430FR2476__)
+#if !defined(ST25TB_HAVE_FULL_LEDS)
 const uint8_t FIELD_FULL_BITMASK[] = {
     0b00000 /* 0 */, 0b00001 /* 1 */, 0b00001 /* 2 */, 0b00011 /* 3 */, // -- on MODES leds
     0b00011 /* 4 */, 0b00111 /* 5 */, 0b01111 /* 6 */, 0b11111 /* 7 */, // -- on STATUS leds
@@ -14,11 +14,14 @@ const uint8_t FIELD_FULL_BITMASK[] = {
 
 void MODE_field()
 {
-    uint8_t reg, prev = 8, i;
+    uint8_t reg, i;
+#if defined (ST25TB_HAVE_CLI)
+    uint8_t prev = 8;
+#endif
 
-#if defined(__MSP430FR2476__)
+#if !defined(ST25TB_HAVE_FULL_LEDS)
     LEDS_Bitmask(LEDS, NB_LEDS, 0b00000);
-#elif defined(__MSP430FR2673__) || defined(__MSP430FR2676__)
+#else
     LEDS_SLOTS_Bitmask(0b00000000);
 #endif
 
@@ -32,20 +35,22 @@ void MODE_field()
         TRF7970A_SPI_DirectCommand(TRF79X0_TEST_EXTERNAL_RF_CMD);
         TIMER_delay_Milliseconds(20);
         reg = TRF7970A_SPI_Read_SingleRegister(TRF79X0_RSSI_LEVEL_REG) & 0b111;
+#if defined (ST25TB_HAVE_CLI)
         if(UART_Enabled && (reg != prev))
         {
-            printf("[");
+            printf("\r\x1b[K" "[");
             for(i = 1; i < 8; i++)
             {
                 printf("%c", (i <= reg) ? '#' : ' ');
             }
-            printf("] %hu" UART_NEWLINE, reg);
+            printf("] %hu", reg);
             prev = reg;
         }
+#endif
 
-#if defined(__MSP430FR2476__)
+#if !defined(ST25TB_HAVE_FULL_LEDS)
         LEDS_Bitmask(LEDS, NB_LEDS, FIELD_FULL_BITMASK[reg]);
-#elif defined(__MSP430FR2673__) || defined(__MSP430FR2676__)
+#else
         if(reg)
         {
             reg++;
@@ -54,7 +59,7 @@ void MODE_field()
 #endif
     } while(!(IRQ_Global & IRQ_SOURCE_SW1));
 
-#if defined(__MSP430FR2476__)
+#if !defined(ST25TB_HAVE_FULL_LEDS)
     LEDS_Bitmask(LEDS, NB_LEDS, 0b00000);
 #endif
     LED_Slot(FlashStoredData.CurrentSlot);

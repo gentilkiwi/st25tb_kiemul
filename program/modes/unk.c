@@ -45,6 +45,7 @@ void MODE_unk()
                     LEDS_SLOTS_Bitmask(Counter1[0]);
                 }
 
+#if defined(ST25TB_HAVE_CLI)
                 if(UART_Enabled)
                 {
                     st25tb_utils_Display_UIDChip(UID);
@@ -53,7 +54,7 @@ void MODE_unk()
                     st25tb_utils_Display_sector_data(Counter2, ST25TB_IDX_COUNTER2);
                     printf("..." UART_NEWLINE);
                 }
-
+#endif
                 BP_IrqSource = IRQ_Wait_for(IRQ_SOURCE_SW1 | IRQ_SOURCE_SW2, NULL, 0);
             }
         }

@@ -4,7 +4,7 @@
     Licence : https://creativecommons.org/licenses/by/4.0/
 */
 #include "cli_14a.h"
-#if !defined(__MSP430FR2673__)
+#if defined(ST25TB_HAVE_CLI)
 #include "../../14a/14a.h"
 
 const CLI_FUNCTION CLI_14A_Functions[] = {

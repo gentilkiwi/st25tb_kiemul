@@ -11,16 +11,16 @@ uint8_t ST25TB_Target_AdjustIdxForSpecialAddr(uint8_t original);
 
 /*
  * SRT512
- *  t0 Antenna reversal delay 128/fS  151 µs
- *  t1 Synchronization delay          151 µs
- *  t2 Answer to new request delay >= 132 µs
+ *  t0 Antenna reversal delay 128/fS  151 ï¿½s
+ *  t1 Synchronization delay          151 ï¿½s
+ *  t2 Answer to new request delay >= 132 ï¿½s
  *
  * ST25TB512-AT
- *  t0 Antenna reversal delay 128/fS  159 µs
- *  t1 Synchronization delay          151 µs
- *  t2 Answer to new request delay >= 132 µs
+ *  t0 Antenna reversal delay 128/fS  159 ï¿½s
+ *  t1 Synchronization delay          151 ï¿½s
+ *  t2 Answer to new request delay >= 132 ï¿½s
  *
- *  -> focus on t0 <= 160 µs ?
+ *  -> focus on t0 <= 160 ï¿½s ?
  */
 
 /*
@@ -39,6 +39,18 @@ uint8_t ST25TB_Target_AdjustIdxForSpecialAddr(uint8_t original);
  * --opt_level=4 (Whole Program Optimizations)
  * --opt_for_speed=3 (Enables optimizations geared towards improving the code performance/speed with a low risk of worsening or impacting code size)
  */
+#if defined(__msp430)
 #define ST25TB_TARGET_DELAY_US_GLOBAL  89
 #define ST25TB_TARGET_DELAY_US_MEDIUM  11
 #define ST25TB_TARGET_DELAY_US_SMALL   3
+#elif defined(STM32F405xx)
+#if !defined(DEBUG)
+#define ST25TB_TARGET_DELAY_US_GLOBAL  102
+#define ST25TB_TARGET_DELAY_US_MEDIUM  7
+#define ST25TB_TARGET_DELAY_US_SMALL   2
+#else
+#define ST25TB_TARGET_DELAY_US_GLOBAL  83
+#define ST25TB_TARGET_DELAY_US_MEDIUM  8
+#define ST25TB_TARGET_DELAY_US_SMALL   2
+#endif
+#endif

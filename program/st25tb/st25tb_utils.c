@@ -4,7 +4,7 @@
     Licence : https://creativecommons.org/licenses/by/4.0/
 */
 #include "st25tb_utils.h"
-#if !defined(__MSP430FR2673__)
+#if defined(ST25TB_HAVE_CLI)
 uint8_t st25tb_utils_Display_UIDChip(const uint8_t *pui8UID)
 {
     uint8_t nbSectors, chipId;

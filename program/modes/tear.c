@@ -131,28 +131,28 @@ uint8_t MODE_tear_Counter(const uint8_t counter, const uint32_t current, uint32_
 {
     uint8_t ret, led_index;
 
-#if defined(__MSP430FR2476__)
+#if !defined(ST25TB_HAVE_FULL_LEDS)
     led_index = (counter == ST25TB_IDX_COUNTER1) ? 0 : 1;
-#elif defined(__MSP430FR2673__) || defined(__MSP430FR2676__)
+#else
     led_index = NB_LEDS_MODES + (counter - (6 - counter));
 #endif
     if(current < target)
     {
         kprintf("|%s| Sector %hu - Start" UART_NEWLINE, __FUNCTION__, counter);
-#if defined(__MSP430FR2476__)
+#if !defined(ST25TB_HAVE_FULL_LEDS)
         LED_OFF(led_index);
-#elif defined(__MSP430FR2673__) || defined(__MSP430FR2676__)
+#else
         LED_ON(led_index);
 #endif
         ret = st25tb_tear_off(counter, current, target, 0);
         kprintf("\n|%s| Sector %hu - ", __FUNCTION__, counter);
-#if defined(__MSP430FR2673__) || defined(__MSP430FR2676__)
+#if defined(ST25TB_HAVE_FULL_LEDS)
         LEDS_Bitmask(LEDS_SLOTS, NB_LEDS_SLOTS - 4, 0);
 #endif
         LEDS_STATUS_Bitmask(0b000);
         if(ret)
         {
-#if defined(__MSP430FR2673__) || defined(__MSP430FR2676__)
+#if defined(ST25TB_HAVE_FULL_LEDS)
         led_index++;
 #endif
             LED_ON(led_index);
@@ -320,9 +320,9 @@ void st25tb_tear_off_adjust_timing(int *tear_off_us, uint32_t tear_off_adjustmen
 uint8_t st25tb_tear_off(const uint8_t block_address, uint32_t current_value, uint32_t target_value, uint32_t tear_off_adjustment_us)
 {
     uint8_t result, trigger = 1;
-#if defined(__MSP430FR2476__)
+#if !defined(ST25TB_HAVE_FULL_LEDS)
     uint8_t led_index = (block_address == ST25TB_IDX_COUNTER1) ? 0 : 1, led_cnt = 0;
-#elif defined(__MSP430FR2673__) || defined(__MSP430FR2676__)
+#else
     uint8_t leds_bits = 0b0001;
 #endif
     uint32_t read_value, last_consolidated_value = 0, tear_off_value;
@@ -411,14 +411,14 @@ uint8_t st25tb_tear_off(const uint8_t block_address, uint32_t current_value, uin
         }
 
         tear_off_us++;
-#if defined(__MSP430FR2476__)
+#if !defined(ST25TB_HAVE_FULL_LEDS)
         if(led_cnt & 0x10)
         {
             LED_TOGGLE(led_index);
             led_cnt = 0;
         }
         led_cnt++;
-#elif defined(__MSP430FR2673__) || defined(__MSP430FR2676__)
+#else
         LEDS_Bitmask(LEDS_SLOTS, NB_LEDS_SLOTS - 4, leds_bits);
         leds_bits <<= 1;
         if(leds_bits > 0b1000)
