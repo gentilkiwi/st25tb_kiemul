@@ -14,9 +14,9 @@ const uint8_t FIELD_FULL_BITMASK[] = {
 
 void MODE_field()
 {
-    uint8_t reg, i;
+    uint8_t reg;
 #if defined (ST25TB_HAVE_CLI)
-    uint8_t prev = 8;
+    uint8_t i, prev = 8;
 #endif
 
 #if !defined(ST25TB_HAVE_FULL_LEDS)
