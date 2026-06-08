@@ -109,7 +109,7 @@ uint8_t ST25TB_Target_ResponseTo()
                     break;
 
                 case 0x00: // Restart / Reset
-                    WDTCTL = 0xcafe;
+                    MCU_RESET();
                     break;
                 }
 

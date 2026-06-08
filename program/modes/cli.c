@@ -3,7 +3,6 @@
     benjamin@gentilkiwi.com
     Licence : https://creativecommons.org/licenses/by/4.0/
 */
-#pragma once
 #include "cli.h"
 #if !defined(__MSP430FR2673__)
 #include "cli/cli_std.h"

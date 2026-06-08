@@ -31,7 +31,7 @@ void CLI_STD_cls()
 
 void CLI_STD_reboot()
 {
-    WDTCTL = 0xcafe;
+    MCU_RESET();
 }
 
 void CLI_STD_coffee()
@@ -50,16 +50,15 @@ void CLI_STD_temperature()
     uint16_t degC;
 
     ADC_TEMP_Enable();
-
     for (i = 0; i < 50; i++)
     {
         ADC_TEMP_Get_RAW();
     }
 
     degC = ADC_TEMP_Get();
-    printf("%i.%hu degC" UART_NEWLINE, degC / 10, degC % 10);
-
     ADC_TEMP_Disable();
+    
+    printf("%i.%hu degC" UART_NEWLINE, degC / 10, degC % 10);
 }
 
 void CLI_STD_memory()

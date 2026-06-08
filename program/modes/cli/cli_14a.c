@@ -82,6 +82,5 @@ void CLI_14A_emul()
         LED_OFF(LED_INDEX_STATUS_BLUE);
     }
     while (!bExitMode);
-
 }
 #endif

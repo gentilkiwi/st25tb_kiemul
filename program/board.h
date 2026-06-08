@@ -46,6 +46,8 @@ uint16_t CRC16_CCIT(const uint8_t *data, uint16_t cbData);
 
 uint16_t RAND_Generate();
 
+#define MCU_RESET()                     WDTCTL = 0xcafe;
+
 #define TIMER_stop()                    TA0CTL &= ~(TAIE | MC)
 #define TIMER_delay_Milliseconds(n_ms)  TIMER_delay_Milliseconds_internal((n_ms) * 33)
 #define TIMER_start_Milliseconds(n_ms)  TIMER_start_Milliseconds_internal((n_ms) * 33)
