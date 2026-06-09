@@ -41,23 +41,24 @@ void CLI_CONFIG_show()
 void CLI_CONFIG_GenericAction(uint8_t *pValue, const char *label)
 {
     char *strToken;
+    uint8_t newValue = *pValue;
 
     strToken = CLI_NextArg();
     if(strToken)
     {
-        uint8_t state = SYSCFG0_L;
-        SYSCFG0 = FWPW | (state & ~(DFWP | PFWP));
-
         if((strcmp(strToken, "set") == 0) || strcmp(strToken, "1") == 0)
         {
-            *pValue = 1;
+        	newValue = 1;
         }
         else if((strcmp(strToken, "clear") == 0) || strcmp(strToken, "0") == 0)
         {
-            *pValue = 0;
+        	newValue = 0;
         }
 
-        SYSCFG0 = FWPW | state;
+        if(newValue != *pValue)
+        {
+        	SLOTS_Update_GenericConfig(pValue, newValue);
+        }
     }
 
     printf("> %s: %hu" UART_NEWLINE, label, *pValue);

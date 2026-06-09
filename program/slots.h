@@ -96,6 +96,8 @@ extern uint16_t g_ui16_cbST25TB_TraceBuffer;
 void SLOTS_Trace_Save();
 void SLOTS_Trace_Clear();
 
+void SLOTS_Update_GenericConfig(uint8_t *configPtr, uint8_t value);
+
 typedef struct _FLASH_STORED_DATA {
     uint8_t CurrentSlot;
     uint8_t bDoNotWriteSystem;

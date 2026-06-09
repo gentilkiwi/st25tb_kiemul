@@ -5,6 +5,10 @@
 */
 #include "slots.h"
 
+#if defined(STM32F405xx)
+HAL_StatusTypeDef STM32_SPECIFIC_update_generic(const FLASH_STORED_DATA *newData);
+#endif
+
 uint8_t SLOTS_ST25TB_Current[SLOTS_ST25TB_SECTORS_INTERNAL][4];
 
 uint8_t SLOTS_Change(uint8_t index)
@@ -16,12 +20,8 @@ uint8_t SLOTS_Change(uint8_t index)
     {
         if(index != FlashStoredData.CurrentSlot)
         {
-            uint8_t state = SYSCFG0_L;
-            SYSCFG0 = FWPW | (state & ~(DFWP | PFWP));
-            FlashStoredData.CurrentSlot = index;
-            SYSCFG0 = FWPW | state;
-
-            kprintf("|%s| - [%hu]" UART_NEWLINE, __FUNCTION__, index);
+            SLOTS_Update_GenericConfig(&FlashStoredData.CurrentSlot, index);
+			kprintf("|%s| - [%" PRIu8 "]" UART_NEWLINE, __FUNCTION__, index);
         }
 #if SLOTS_ST25TB_COUNT > 8
         LEDS_SLOTS_Bitmask(index);
@@ -56,12 +56,19 @@ uint8_t SLOTS_Save(uint8_t index)
 
     if(index < SLOTS_ST25TB_COUNT)
     {
+#if defined(__MSP430_HAS_FRAM__)
         uint8_t state = SYSCFG0_L;
         SYSCFG0 = FWPW | (state & ~(DFWP | PFWP));
         memcpy(FlashStoredData.Slots[index], SLOTS_ST25TB_Current, sizeof(FlashStoredData.Slots[index]));
         SYSCFG0 = FWPW | state;
-
-        kprintf("|%s| - [%hu] [UID: %016llx]" UART_NEWLINE, __FUNCTION__, index, *(uint64_t *) (SLOTS_ST25TB_Current + SLOTS_ST25TB_INDEX_UID));
+#elif defined(STM32F405xx)
+    	FLASH_STORED_DATA tmp = FlashStoredData;
+    	memcpy(tmp.Slots[index], SLOTS_ST25TB_Current, sizeof(tmp.Slots[index]));
+    	STM32_SPECIFIC_update_generic(&tmp);
+#else
+#error Not supported
+#endif
+        kprintf("|%s| - [%" PRIu8 "] [UID: %016" PRIx64 "]" UART_NEWLINE, __FUNCTION__, index, *(uint64_t *) (SLOTS_ST25TB_Current + SLOTS_ST25TB_INDEX_UID));
         ret = 1;
     }
     else
@@ -92,39 +99,78 @@ uint16_t g_ui16_cbST25TB_TraceBuffer = 0;
 
 void SLOTS_Trace_Save()
 {
-    uint8_t state;
-
     if(g_ui16_cbST25TB_TraceBuffer)
     {
-        state = SYSCFG0_L;
+#if defined(__MSP430_HAS_FRAM__)
+        uint8_t state = SYSCFG0_L;
         SYSCFG0 = FWPW | (state & ~(DFWP | PFWP));
         FlashStoredData.ST25TB_cbTrace = g_ui16_cbST25TB_TraceBuffer;
         memcpy(FlashStoredData.ST25TB_Trace, g_ui8_ST25TB_TraceBuffer, g_ui16_cbST25TB_TraceBuffer);
         SYSCFG0 = FWPW | state;
-        kprintf("|%s| - Saved trace for %u bytes" UART_NEWLINE, __FUNCTION__, g_ui16_cbST25TB_TraceBuffer);
+#elif defined(STM32F405xx)
+		FLASH_STORED_DATA tmp = FlashStoredData;
+		tmp.ST25TB_cbTrace = g_ui16_cbST25TB_TraceBuffer;
+		memcpy(tmp.ST25TB_Trace, g_ui8_ST25TB_TraceBuffer, g_ui16_cbST25TB_TraceBuffer);
+		STM32_SPECIFIC_update_generic(&tmp);
+#else
+#error Not supported
+#endif
+		kprintf("|%s| - Saved trace for %" PRIu16 " bytes" UART_NEWLINE, __FUNCTION__, g_ui16_cbST25TB_TraceBuffer);
         g_ui16_cbST25TB_TraceBuffer = 0;
     }
 }
 
 void SLOTS_Trace_Clear()
 {
-    uint8_t state = SYSCFG0_L;
-    SYSCFG0 = FWPW | (state & ~(DFWP | PFWP));
-    FlashStoredData.ST25TB_cbTrace = 0;
-    memset(FlashStoredData.ST25TB_Trace, 0, ST25TB_TRACE_BUFFER_SIZE);
-    SYSCFG0 = FWPW | state;
+#if defined(__MSP430_HAS_FRAM__)
+        uint8_t state = SYSCFG0_L;
+        SYSCFG0 = FWPW | (state & ~(DFWP | PFWP));
+        FlashStoredData.ST25TB_cbTrace = 0;
+        memset(FlashStoredData.ST25TB_Trace, 0, ST25TB_TRACE_BUFFER_SIZE);
+        SYSCFG0 = FWPW | state;
+#elif defined(STM32F405xx)
+	FLASH_STORED_DATA tmp = FlashStoredData;
+	tmp.ST25TB_cbTrace = 0;
+	memset(tmp.ST25TB_Trace, 0, ST25TB_TRACE_BUFFER_SIZE);
+	STM32_SPECIFIC_update_generic(&tmp);
+#else
+#error Not supported
+#endif
     g_ui16_cbST25TB_TraceBuffer = 0;
     kprintf("|%s| - Cleared trace" UART_NEWLINE, __FUNCTION__);
 }
 
-#pragma PERSISTENT(FlashStoredData)
-/*const */FLASH_STORED_DATA FlashStoredData = {
-    .CurrentSlot = 0,
-    .bDoNotWriteSystem = 1,
-    .bDoNotWriteCounters = 0,
-    .bModeEmulateSW2Save = 1,
-    .bUARTEnabled = 0,
+void SLOTS_Update_GenericConfig(uint8_t *configPtr, uint8_t value)
+{
+#if defined(__MSP430_HAS_FRAM__)
+    uint8_t state = SYSCFG0_L;
+    SYSCFG0 = FWPW | (state & ~(DFWP | PFWP));
+    *configPtr = value;
+    SYSCFG0 = FWPW | state;
+#elif defined(STM32F405xx)
+	FLASH_STORED_DATA tmp = FlashStoredData;
+	size_t offset = configPtr - (uint8_t *)&FlashStoredData;
+	((uint8_t *)&tmp)[offset] = value;
+	STM32_SPECIFIC_update_generic(&tmp);
+#else
+#error Not supported
+#endif
+}
 
+#if defined(__MSP430_HAS_FRAM__)
+#pragma PERSISTENT(FlashStoredData)
+#elif defined(STM32F405xx)
+__attribute__ ((aligned (16*1024), section(".flash_storage")))
+#else
+#error Not supported
+#endif
+/*const */FLASH_STORED_DATA FlashStoredData = {
+	.CurrentSlot = 0,
+	.bDoNotWriteSystem = 1,
+	.bDoNotWriteCounters = 0,
+	.bModeEmulateSW2Save = 1,
+	.bUARTEnabled = 0,
+    
     .Slots = {
         {   /* Slot 0 */
             #undef SLOT_UID_BYTE
@@ -216,3 +262,40 @@ void SLOTS_Trace_Clear()
     .ST25TB_cbTrace = 0,
     //.ST25TB_Trace
 };
+
+#if defined(STM32F405xx)
+const FLASH_EraseInitTypeDef FLASH_STORAGE_ERASE = {
+		.TypeErase = FLASH_TYPEERASE_SECTORS,
+		.Banks = FLASH_BANK_1,
+		.Sector = FLASH_SECTOR_1,
+		.NbSectors = 1,
+		.VoltageRange = FLASH_VOLTAGE_RANGE_3,
+};
+HAL_StatusTypeDef STM32_SPECIFIC_update_generic(const FLASH_STORED_DATA *newData)
+{
+  HAL_StatusTypeDef ret;
+  uint32_t SectorError;
+
+  ret = HAL_FLASH_Unlock();
+  if (ret == HAL_OK)
+  {
+	  uint32_t primask = __get_PRIMASK();
+	  __disable_irq();
+	  ret = HAL_FLASHEx_Erase((FLASH_EraseInitTypeDef*) &FLASH_STORAGE_ERASE, &SectorError);
+	  if (ret == HAL_OK)
+	  {
+		const uint32_t *src = (const uint32_t *)newData; // we know FLASH_STORED_DATA is multiple of 4 bytes by design
+		uint32_t *dst = (uint32_t *)&FlashStoredData;
+		size_t n_words = sizeof(FLASH_STORED_DATA) / sizeof(uint32_t);
+
+		for (size_t i = 0; (i < n_words) && (ret == HAL_OK); i++)
+		{
+			ret = HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, (uint32_t)&dst[i], src[i]); // did you know FLASH_TYPEPROGRAM_DOUBLEWORD needs Vpp? now we both know
+		}
+	  }
+	  __set_PRIMASK(primask); //__enable_irq();
+	  HAL_FLASH_Lock();
+  }
+  return ret;
+}
+#endif

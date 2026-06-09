@@ -207,7 +207,6 @@ void CLI_SLOT_trace()
     if(CLI_NextArg())
     {
         SLOTS_Trace_Clear();
-        printf("> Reset!" UART_NEWLINE);
     }
     else if(FlashStoredData.ST25TB_cbTrace)
     {
