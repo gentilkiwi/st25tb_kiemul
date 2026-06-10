@@ -21,7 +21,8 @@ jobs:
     - name: Build project
       working-directory: stm32_hydrabus
       run: |
-        cmake --build --preset Release -j
+        cmake --build --preset Release --parallel $(nproc)
+        ls -al build/*/*.{elf,bin,hex}
     - name: Upload artifacts
       uses: actions/upload-artifact@v7
       with:
