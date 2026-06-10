@@ -6,6 +6,15 @@
 #pragma once
 #include "board.h"
 #if defined(ST25TB_HAVE_CLI)
+
+#if !defined(__int64_t_defined)
+#  define __int64_t_defined 1
+#endif
+#if !defined(__have_longlong64)
+#  define __have_longlong64 1
+#endif
+
+
 #include <stdio.h>
 #include <inttypes.h>
 

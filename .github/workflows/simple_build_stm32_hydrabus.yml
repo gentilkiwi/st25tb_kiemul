@@ -1,0 +1,33 @@
+name: STM32 
+on: [workflow_dispatch, push, pull_request]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout project
+      uses: actions/checkout@v6
+    - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends cmake ninja-build gcc-arm-none-eabi libnewlib-arm-none-eabi
+    - name: Configure CMake
+      working-directory: stm32_hydrabus
+      run: cmake --preset Release
+    - name: Build project
+      working-directory: stm32_hydrabus
+      run: |
+        cmake --build --preset Release -j
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v7
+      with:
+        name: st25tb_kiwi_stm32_hydrabus
+        compression-level: 9
+        path: |
+          stm32_hydrabus/build/Release/*.elf
+          stm32_hydrabus/build/Release/*.bin
+          stm32_hydrabus/build/Release/*.hex
