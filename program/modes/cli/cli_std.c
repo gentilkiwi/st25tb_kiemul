@@ -46,19 +46,8 @@ void CLI_STD_answer()
 
 void CLI_STD_temperature()
 {
-    uint8_t i;
-    uint16_t degC;
-
-    ADC_TEMP_Enable();
-    for (i = 0; i < 50; i++)
-    {
-        ADC_TEMP_Get_RAW();
-    }
-
-    degC = ADC_TEMP_Get();
-    ADC_TEMP_Disable();
-    
-    printf("%i.%hu degC" UART_NEWLINE, degC / 10, degC % 10);
+    int16_t degC = ADC_TEMP_Get();
+    printf("%s%" PRIu16 ".%" PRIu16 " degC" UART_NEWLINE, (degC < 0) ? "-" : "", (uint16_t)((degC < 0 ? -degC : degC) / 10), (uint16_t)((degC < 0 ? -degC : degC) % 10));
 }
 
 void CLI_STD_memory()

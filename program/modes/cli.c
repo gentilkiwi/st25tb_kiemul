@@ -64,19 +64,19 @@ void MODE_cli_Module(const CLI_MODULE * Module, const char* strToken)
 const char CLI_SEPARATORS[] = " ";
 void MODE_cli()
 {
-    uint8_t bPreviousUART_Enabled, BP_IrqSource, i, bIsFound;
-    char *strToken;
-
-    printf(UART_NEWLINE "Welcome to the CLI!" UART_NEWLINE);
-    LEDS_STATUS_Bitmask(0b000);
-
-    bPreviousUART_Enabled = UART_Enabled;
+#if defined(__msp430)
+	uint8_t bPreviousUART_Enabled = UART_Enabled;
     if(!UART_Enabled)
     {
         printf("> UART was disabled and has been temporarily re-enabled" UART_NEWLINE);
         UART_Enabled = 1;
     }
+#endif
+    uint8_t BP_IrqSource, i, bIsFound;
+    char *strToken;
 
+    printf(UART_NEWLINE "Welcome to the CLI!" UART_NEWLINE);
+    LEDS_STATUS_Bitmask(0b000);
     printf(UART_NEWLINE);
 
     do
@@ -115,11 +115,13 @@ void MODE_cli()
     while (!(BP_IrqSource & IRQ_SOURCE_SW1));
 
     printf(UART_NEWLINE "Bye!" UART_NEWLINE);
+#if defined(__msp430)
     UART_Enabled = bPreviousUART_Enabled | FlashStoredData.bUARTEnabled;
+#endif
     SLOTS_Load_Current();
 }
 
-_CODE_ACCESS char *CLI_NextArg()
+/*_CODE_ACCESS */char *CLI_NextArg()
 {
     return strtok(NULL, CLI_SEPARATORS);
 }

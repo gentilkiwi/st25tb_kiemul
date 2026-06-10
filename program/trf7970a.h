@@ -12,6 +12,8 @@ typedef struct _TRF7970A_MODE {
     const uint8_t delay;
 } TRF7970A_MODE, *PTRF7970A_MODE;
 
+#if defined(__msp430)
+
 #define TRF_ENABLE()        TRF_EN_PORT |= TRF_EN_BIT
 #define TRF_DISABLE()       TRF_EN_PORT &= ~TRF_EN_BIT
 
@@ -29,6 +31,23 @@ typedef struct _TRF7970A_MODE {
 
 #define TRF_SPI_SEND(s)     do{UCB1TXBUF = s; TRF_SPI_WAIT_TX(); } while(0) // Usually, WAIT_TX before sending, but 1/ we're sure 1st one will be ok, 2/ more efficient for direct reading after
 #define TRF_SPI_RECV(r)     do{UCB1TXBUF = 0x00; TRF_SPI_WAIT_BUSY(); r = UCB1RXBUF;} while(0)   // More efficient than playing with RX/TX or IRQ...
+
+#elif defined(STM32F405xx)
+
+#define TRF_ENABLE()        HAL_GPIO_WritePin(TRF_EN_GPIO_Port, TRF_EN_Pin, GPIO_PIN_SET)
+#define TRF_DISABLE()       HAL_GPIO_WritePin(TRF_EN_GPIO_Port, TRF_EN_Pin, GPIO_PIN_RESET)
+
+#define TRF_CS_ENABLE()     TRF_CS_DELAY(); HAL_GPIO_WritePin(TRF_IO4_SPI2_CS_GPIO_Port, TRF_IO4_SPI2_CS_Pin, GPIO_PIN_RESET)
+#define TRF_CS_DISABLE()    HAL_GPIO_WritePin(TRF_IO4_SPI2_CS_GPIO_Port, TRF_IO4_SPI2_CS_Pin, GPIO_PIN_SET); TRF_CS_DELAY()
+
+#define TRF_CS_DELAY()		do{ __no_operation(); __no_operation(); __no_operation(); __no_operation(); __no_operation(); __no_operation(); __no_operation(); __no_operation(); __no_operation(); __no_operation(); __no_operation(); __no_operation(); __no_operation(); __no_operation(); } while(0)
+
+#define TRF_IRQ_READ()      HAL_GPIO_ReadPin(TRF_IRQ_GPIO_Port, TRF_IRQ_Pin)
+#define TRF_IRQ_ENABLE()    do{TRF_IRQ_CLEAR(); TRF_IRQ_READ() ? (IRQ_Global |= IRQ_SOURCE_TRF7970A) : (IRQ_Global &= ~IRQ_SOURCE_TRF7970A); HAL_NVIC_EnableIRQ(EXTI1_IRQn);} while(0)
+#define TRF_IRQ_DISABLE()   HAL_NVIC_DisableIRQ(EXTI1_IRQn)
+#define TRF_IRQ_CLEAR()		__HAL_GPIO_EXTI_CLEAR_IT(TRF_IRQ_Pin)
+
+#endif
 
 void TRF7970A_init();
 void TRF7970A_mode(const TRF7970A_MODE * pMode);

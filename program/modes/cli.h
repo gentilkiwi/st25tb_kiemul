@@ -21,7 +21,7 @@ typedef struct _CLI_MODULE {
 } CLI_MODULE, *PCLI_MODULE;
 
 void MODE_cli();
-_CODE_ACCESS char *CLI_NextArg();
+/*_CODE_ACCESS */char *CLI_NextArg();
 void CLI_BASE64_kprint(const uint8_t *src, uint16_t srclen);
 int16_t CLI_BASE64_decode(const char *src, uint16_t srclen, uint8_t *dst);
 void CLI_print_status(const uint8_t ret);

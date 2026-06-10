@@ -6,10 +6,11 @@
 #include "uart.h"
 #if defined(ST25TB_HAVE_CLI)
 #include "slots.h"
-#include <file.h>
 
 uint8_t UART_Enabled = 0x00;
 
+#if defined(__msp430)
+#include <file.h>
 int UART_open(const char *path, unsigned flags, int llv_fd)
 {
     return 0;
@@ -67,6 +68,41 @@ void UART_Redirect_std()
 
     UART_Enabled = FlashStoredData.bUARTEnabled;
 }
+#elif defined(STM32F405xx)
+
+int _write(int file, char *ptr, int len)
+{
+	(void) file;
+	uint8_t rc;
+
+	if (UART_Enabled) //hUsbDeviceFS.dev_state == USBD_STATE_CONFIGURED)
+	{
+		do
+		{
+			rc = CDC_Transmit_FS((uint8_t*) ptr, len);
+		} while (rc == USBD_BUSY);
+
+		if (rc == USBD_FAIL)
+		{
+			len = 0;
+		}
+
+	}
+
+	return len;
+}
+
+void UART_Redirect_std()
+{
+    //add_device("uart", _SSA, UART_open, UART_close, UART_read, UART_write, UART_lseek, UART_unlink, UART_rename);
+    //add_device("uart", _SSA, UART_open, NULL, NULL, UART_write, NULL, NULL, NULL);
+    //freopen("uart:", "w", stdout);
+    setvbuf(stdout, NULL, _IONBF, 0);
+
+    //UART_Enabled = FlashStoredData.bUARTEnabled;
+}
+
+#endif
 
 void kprinthex(const void *lpData, const uint16_t cbData)
 {

@@ -160,7 +160,7 @@ void SLOTS_Update_GenericConfig(uint8_t *configPtr, uint8_t value)
 #if defined(__MSP430_HAS_FRAM__)
 #pragma PERSISTENT(FlashStoredData)
 #elif defined(STM32F405xx)
-__attribute__ ((aligned (16*1024), section(".flash_storage")))
+__attribute__((section(".flash_storage"), used))
 #else
 #error Not supported
 #endif

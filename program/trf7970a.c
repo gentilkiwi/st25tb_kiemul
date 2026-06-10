@@ -42,18 +42,30 @@ void TRF7970A_mode(const TRF7970A_MODE * pMode)
 void TRF7970A_SPI_Send_raw(const uint8_t *pcbData, uint8_t cbData)
 {
     TRF_CS_ENABLE();
+#if defined(__msp430)
     while(cbData > 0)
     {
         TRF_SPI_SEND(*pcbData++);
         cbData--;
     }
+#elif defined(STM32F405xx)
+    HAL_SPI_Transmit(SPI_INTERNAL_HANDLE, (uint8_t *) pcbData, cbData, HAL_MAX_DELAY);
+#else
+#error Not supported
+#endif
     TRF_CS_DISABLE();
 }
 
 void TRF7970A_SPI_DirectCommand_internal(uint8_t CommandCode_Preparred) // be careful, optimization make multiple direct commands too fast, a cycle between can help...
 {
     TRF_CS_ENABLE();
+#if defined(__msp430)
     TRF_SPI_SEND(CommandCode_Preparred);
+#elif defined(STM32F405xx)
+    HAL_SPI_Transmit(SPI_INTERNAL_HANDLE, &CommandCode_Preparred, 1, HAL_MAX_DELAY);
+#else
+#error Not supported
+#endif
     TRF_CS_DISABLE();
 }
 
@@ -62,8 +74,16 @@ uint8_t TRF7970A_SPI_Read_SingleRegister_internal(uint8_t Register_Prepared)
     uint8_t res;
 
     TRF_CS_ENABLE();
+#if defined(__msp430)
     TRF_SPI_SEND(Register_Prepared);
     TRF_SPI_RECV(res);
+#elif defined(STM32F405xx)
+    uint8_t buffer[2] = {Register_Prepared, };
+    HAL_SPI_TransmitReceive(SPI_INTERNAL_HANDLE, buffer, buffer, sizeof(buffer), HAL_MAX_DELAY);
+    res = buffer[1];
+#else
+#error Not supported
+#endif
     TRF_CS_DISABLE();
 
     return res;
@@ -71,22 +91,35 @@ uint8_t TRF7970A_SPI_Read_SingleRegister_internal(uint8_t Register_Prepared)
 
 void TRF7970A_SPI_Write_SingleRegister_internal(uint8_t Register_Prepared, const uint8_t Value)
 {
-
     TRF_CS_ENABLE();
+#if defined(__msp430)
     TRF_SPI_SEND(Register_Prepared);
     TRF_SPI_SEND(Value);
+#elif defined(STM32F405xx)
+    uint8_t buffer[2] = {Register_Prepared, Value};
+    HAL_SPI_Transmit(SPI_INTERNAL_HANDLE, buffer, sizeof(buffer), HAL_MAX_DELAY);
+#else
+#error Not supported
+#endif
     TRF_CS_DISABLE();
 }
 
 void TRF7970A_SPI_Read_ContinuousRegister_internal(uint8_t Register_Prepared, uint8_t *pbData, uint8_t cbData)
 {
     TRF_CS_ENABLE();
+#if defined(__msp430)
     TRF_SPI_SEND(Register_Prepared);
     while(cbData > 0)
     {
         TRF_SPI_RECV(*pbData++);
         cbData--;
     }
+#elif defined(STM32F405xx)
+    HAL_SPI_Transmit(SPI_INTERNAL_HANDLE, &Register_Prepared, 1, HAL_MAX_DELAY);
+    HAL_SPI_Receive(SPI_INTERNAL_HANDLE, pbData, cbData, HAL_MAX_DELAY);
+#else
+#error Not supported
+#endif
     TRF_CS_DISABLE();
 }
 
@@ -108,7 +141,8 @@ void TRF7970A_SPI_Write_Packet_TYPED_BB(const uint8_t *pcbData, uint8_t cbData, 
     ui8LenLowerNibble |= (ui16TotalLength & 0x0f) << 4;
     ui8LenHigherNibble = (uint8_t) ((ui16TotalLength & 0x0ff0) >> 4);
 
-    TRF_CS_ENABLE();
+    TRF_CS_ENABLE(); // TODO, see send raw ?
+#if defined(__msp430)
     TRF_SPI_SEND(MK_DC(TRF79X0_RESET_FIFO_CMD));
     TRF_SPI_SEND(type);
     TRF_SPI_SEND(MK_WC(TRF79X0_TX_LENGTH_BYTE1_REG));
@@ -119,6 +153,17 @@ void TRF7970A_SPI_Write_Packet_TYPED_BB(const uint8_t *pcbData, uint8_t cbData, 
         TRF_SPI_SEND(*pcbData++);
         cbData--;
     }
+#elif defined(STM32F405xx)
+    uint8_t buffer[5] = {
+        MK_DC(TRF79X0_RESET_FIFO_CMD),
+        type,
+        MK_WC(TRF79X0_TX_LENGTH_BYTE1_REG),
+		ui8LenHigherNibble, // in TRF79X0_TX_LENGTH_BYTE1_REG
+        ui8LenLowerNibble   // in TRF79X0_TX_LENGTH_BYTE2_REG
+    };
+    HAL_SPI_Transmit(SPI_INTERNAL_HANDLE, buffer, sizeof(buffer), HAL_MAX_DELAY);
+    HAL_SPI_Transmit(SPI_INTERNAL_HANDLE, (uint8_t *) pcbData, cbData, HAL_MAX_DELAY);
+#endif
     TRF_CS_DISABLE();
 }
 
@@ -126,7 +171,7 @@ uint8_t TRF7970A_SPI_waitIrq()
 {
     while(!(IRQ_Global & IRQ_SOURCE_TRF7970A))
     {
-        __low_power_mode_0();
+        __emptyloop();
     }
     IRQ_Global &= ~IRQ_SOURCE_TRF7970A;
 

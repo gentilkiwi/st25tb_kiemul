@@ -7,8 +7,15 @@
 #include "board.h"
 
 typedef struct _LED {
+#if defined(__msp430)
     volatile unsigned char *portOutput;
     uint8_t bit;
+#elif defined(STM32F405xx)
+	GPIO_TypeDef* portOutput;
+	uint16_t bit;
+#else
+#error Not supported
+#endif
 } LED, *PLED;
 
 #if !defined(ST25TB_HAVE_FULL_LEDS)
@@ -60,6 +67,14 @@ void LEDS_Animation();
 #define LED_OFF(index)                  LED_OFF_internal(LEDS[index].portOutput, LEDS[index].bit)
 #define LED_TOGGLE(index)               LED_TOGGLE_internal(LEDS[index].portOutput, LEDS[index].bit)
 
+#if defined(__msp430)
 #define LED_ON_internal(p, b)           *p |= b
 #define LED_OFF_internal(p, b)          *p &= ~b
 #define LED_TOGGLE_internal(p, b)       *p ^= b
+#elif defined(STM32F405xx)
+#define LED_ON_internal(p, b)           HAL_GPIO_WritePin(p, b, GPIO_PIN_SET)
+#define LED_OFF_internal(p, b)		    HAL_GPIO_WritePin(p, b, GPIO_PIN_RESET)
+#define LED_TOGGLE_internal(p, b)       HAL_GPIO_TogglePin(p, b)
+#else
+#error Not supported
+#endif

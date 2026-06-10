@@ -9,11 +9,60 @@ volatile uint8_t IRQ_Global = IRQ_SOURCE_NONE;
 #if defined(ST25TB_HAVE_CLI)
 char UART_RX_BUFFER[0x300];
 uint16_t cbRxBuffer = 0;
-#if defined(STM32F405xx)
-volatile uint8_t isUSBCDCWanted = 0;
-#endif
 #endif
 
+uint8_t IRQ_Wait_for(uint8_t IRQWanted, uint8_t *pTRF7970A_irqStatus, uint16_t timeout_ms)
+{
+    uint8_t ret;
+
+    if(IRQWanted & IRQ_SOURCE_SW1)
+    {
+        IRQ_Global &= ~IRQ_SOURCE_SW1;
+    }
+
+    if(IRQWanted & IRQ_SOURCE_SW2)
+    {
+        IRQ_Global &= ~IRQ_SOURCE_SW2;
+    }
+
+    if(IRQWanted & IRQ_SOURCE_TIMER)
+    {
+        TIMER_start_Milliseconds(timeout_ms);
+    }
+#if defined(ST25TB_HAVE_CLI)
+    if(IRQWanted & IRQ_SOURCE_UART_RX)
+    {
+        IRQ_Global &= ~IRQ_SOURCE_UART_RX;
+        cbRxBuffer = 0;
+        UART_ENABLE_RX_IRQ();
+    }
+#endif
+    while(!(IRQWanted & IRQ_Global))
+    {
+        __emptyloop();
+    }
+    ret = IRQWanted & IRQ_Global;
+
+    if(IRQWanted & IRQ_SOURCE_TRF7970A)
+    {
+        IRQ_Global &= ~IRQ_SOURCE_TRF7970A;
+        *pTRF7970A_irqStatus = TRF7970A_getIrqStatus();
+    }
+
+    if(IRQWanted & IRQ_SOURCE_TIMER)
+    {
+        TIMER_stop();
+    }
+#if defined(ST25TB_HAVE_CLI)
+    if(IRQWanted & IRQ_SOURCE_UART_RX)
+    {
+        UART_DISABLE_RX_IRQ();
+    }
+#endif
+    return ret;
+}
+
+#if defined(__msp430)
 void BOARD_init()
 {
     WDTCTL = WDTPW | WDTHOLD;
@@ -254,7 +303,18 @@ uint16_t ADC_TEMP_Get_RAW()
 
 int16_t ADC_TEMP_Get()
 {
-    uint16_t ADC_Result = ADC_TEMP_Get_RAW();
+    uint8_t i;
+    uint16_t ADC_Result;
+    
+    ADC_TEMP_Enable();
+    for (i = 0; i < 50; i++)
+    {
+        ADC_TEMP_Get_RAW();
+    }
+
+    ADC_Result = ADC_TEMP_Get_RAW();
+    ADC_TEMP_Disable();
+
     return (int16_t) (((int32_t)((int16_t)(ADC_Result - CALADC_15V_30C)) * (105 - 30) * 10) / (CALADC_15V_105C - CALADC_15V_30C) + (30 * 10));
 }
 
@@ -286,7 +346,7 @@ void TIMER_delay_Milliseconds_internal(uint16_t n_unit_ms) // max is UINT16_MAX 
 
     while(!(IRQ_Global & IRQ_SOURCE_TIMER))
     {
-        __low_power_mode_0();
+        __emptyloop();
     }
     TIMER_stop();
 }
@@ -306,60 +366,9 @@ void TIMER_delay_Microseconds_internal(uint16_t n_unit_us) // max is UINT16_MAX 
 
     while(!(IRQ_Global & IRQ_SOURCE_TIMER))
     {
-        __low_power_mode_0();
+        __emptyloop();
     }
     TIMER_stop();
-}
-
-uint8_t IRQ_Wait_for(uint8_t IRQWanted, uint8_t *pTRF7970A_irqStatus, uint16_t timeout_ms)
-{
-    uint8_t ret;
-
-    if(IRQWanted & IRQ_SOURCE_SW1)
-    {
-        IRQ_Global &= ~IRQ_SOURCE_SW1;
-    }
-
-    if(IRQWanted & IRQ_SOURCE_SW2)
-    {
-        IRQ_Global &= ~IRQ_SOURCE_SW2;
-    }
-
-    if(IRQWanted & IRQ_SOURCE_TIMER)
-    {
-        TIMER_start_Milliseconds(timeout_ms);
-    }
-#if defined(ST25TB_HAVE_CLI)
-    if(IRQWanted & IRQ_SOURCE_UART_RX)
-    {
-        IRQ_Global &= ~IRQ_SOURCE_UART_RX;
-        cbRxBuffer = 0;
-        UART_ENABLE_RX_IRQ();
-    }
-#endif
-    while(!(IRQWanted & IRQ_Global))
-    {
-        __low_power_mode_0();
-    }
-    ret = IRQWanted & IRQ_Global;
-
-    if(IRQWanted & IRQ_SOURCE_TRF7970A)
-    {
-        IRQ_Global &= ~IRQ_SOURCE_TRF7970A;
-        *pTRF7970A_irqStatus = TRF7970A_getIrqStatus();
-    }
-
-    if(IRQWanted & IRQ_SOURCE_TIMER)
-    {
-        TIMER_stop();
-    }
-#if defined(ST25TB_HAVE_CLI)
-    if(IRQWanted & IRQ_SOURCE_UART_RX)
-    {
-        UART_DISABLE_RX_IRQ();
-    }
-#endif
-    return ret;
 }
 
 #if defined(__MSP430FR2476__)
@@ -520,5 +529,88 @@ __interrupt void EUSCI_A0_ISR (void)
     }
 
     __low_power_mode_off_on_exit();
+}
+#endif
+#elif defined(STM32F405xx)
+volatile uint8_t isUSBCDCWanted = 0;
+
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+	switch(GPIO_Pin)
+	{
+	case TRF_IRQ_Pin:
+		IRQ_Global |= IRQ_SOURCE_TRF7970A;
+		break;
+	case K1_Pin:
+		IRQ_Global |= IRQ_SOURCE_SW1;
+		break;
+	case UBTN_Pin:
+		IRQ_Global |= IRQ_SOURCE_SW2;
+		break;
+	/*
+	 * No K3 nor K4
+	 */
+	}
+}
+
+int16_t ADC_TEMP_Get(void)
+{
+  uint16_t adc_buf[2];
+  HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_buf, 2);
+  HAL_DMA_PollForTransfer(hadc1.DMA_Handle, HAL_DMA_FULL_TRANSFER, 10);
+  HAL_ADC_Stop_DMA(&hadc1);
+
+  int32_t temp_scaled = (adc_buf[0] * (*VREFINT_CAL_ADDR)) / adc_buf[1];
+  return (int16_t)(((TEMPSENSOR_CAL2_TEMP - TEMPSENSOR_CAL1_TEMP) * 10 * (temp_scaled - *TEMPSENSOR_CAL1_ADDR)) / (*TEMPSENSOR_CAL2_ADDR - *TEMPSENSOR_CAL1_ADDR) + TEMPSENSOR_CAL1_TEMP * 10);
+}
+
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+	if(htim->Instance == TIMER_INTERNAL_HANDLE->Instance)
+	{
+		TIMER_stop();
+		IRQ_Global |= IRQ_SOURCE_TIMER;
+	}
+}
+
+void TIMER_delay_Milliseconds_internal(uint16_t n_unit_ms) {
+	__HAL_TIM_SET_AUTORELOAD(TIMER_INTERNAL_HANDLE, n_unit_ms);
+	__HAL_TIM_SET_PRESCALER(TIMER_INTERNAL_HANDLE, 839);
+	TIMER_INTERNAL_HANDLE->Instance->EGR = TIM_EGR_UG;
+	CLEAR_BIT(TIMER_INTERNAL_HANDLE->Instance->SR, TIM_FLAG_UPDATE); // even TIM_Base_SetConfig needed it
+	IRQ_Global &= ~IRQ_SOURCE_TIMER;
+	if (HAL_TIM_Base_Start_IT(TIMER_INTERNAL_HANDLE) == HAL_OK) {
+		while (!(IRQ_Global & IRQ_SOURCE_TIMER))
+			;
+	} else {
+		Error_Handler();
+	}
+}
+
+void TIMER_start_Milliseconds_internal(uint16_t n_unit_ms) {
+	__HAL_TIM_SET_AUTORELOAD(TIMER_INTERNAL_HANDLE, n_unit_ms);
+	__HAL_TIM_SET_PRESCALER(TIMER_INTERNAL_HANDLE, 839);
+	TIMER_INTERNAL_HANDLE->Instance->EGR = TIM_EGR_UG;
+	CLEAR_BIT(TIMER_INTERNAL_HANDLE->Instance->SR, TIM_FLAG_UPDATE); // even TIM_Base_SetConfig needed it
+	IRQ_Global &= ~IRQ_SOURCE_TIMER;
+	if (HAL_TIM_Base_Start_IT(TIMER_INTERNAL_HANDLE) == HAL_OK) {
+
+	} else {
+		Error_Handler();
+	}
+}
+
+void TIMER_delay_Microseconds_internal(uint16_t n_unit_us) {
+	__HAL_TIM_SET_AUTORELOAD(TIMER_INTERNAL_HANDLE, n_unit_us);
+	__HAL_TIM_SET_PRESCALER(TIMER_INTERNAL_HANDLE, 0);
+	TIMER_INTERNAL_HANDLE->Instance->EGR = TIM_EGR_UG;
+	CLEAR_BIT(TIMER_INTERNAL_HANDLE->Instance->SR, TIM_FLAG_UPDATE); // even TIM_Base_SetConfig needed it after, too fast ?
+	IRQ_Global &= ~IRQ_SOURCE_TIMER;
+	if (HAL_TIM_Base_Start_IT(TIMER_INTERNAL_HANDLE) == HAL_OK) {
+		while (!(IRQ_Global & IRQ_SOURCE_TIMER))
+			;
+	} else {
+		Error_Handler();
+	}
 }
 #endif
