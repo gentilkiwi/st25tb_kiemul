@@ -15,13 +15,18 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install -y --no-install-recommends cmake ninja-build gcc-arm-none-eabi libnewlib-arm-none-eabi
-    - name: Configure CMake
+
+    - name: Configure CMake for project
       working-directory: stm32_hydrabus
       run: cmake --preset Release
     - name: Build project
       working-directory: stm32_hydrabus
       run: |
         cmake --build --preset Release --parallel $(nproc)
+
+    - name: Information about project
+      working-directory: stm32_hydrabus
+      run: |
         ls -al build/*/*.{elf,bin,hex}
     - name: Upload artifacts
       uses: actions/upload-artifact@v7

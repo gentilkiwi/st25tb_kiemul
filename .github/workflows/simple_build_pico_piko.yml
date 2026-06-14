@@ -49,12 +49,12 @@ jobs:
     - name: Build project
       working-directory: pico_piko
       run: cmake --build build --parallel $(nproc)
+
     - name: Information about project
       working-directory: pico_piko
       run: |
-        ls -al build/*/*.{elf,hex,uf2}
+        ls -al build/*.{elf,hex,uf2}
         picotool/picotool info --all build/*.elf -t elf
-
     - name: Upload artifacts
       uses: actions/upload-artifact@v7
       with:
