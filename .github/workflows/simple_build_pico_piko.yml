@@ -1,0 +1,66 @@
+name: PICO
+on: [workflow_dispatch, push, pull_request]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout project
+      uses: actions/checkout@v6
+    - name: Checkout Pico SDK
+      uses: actions/checkout@v6
+      with:
+        repository: raspberrypi/pico-sdk
+        path: pico-sdk
+        submodules: 'recursive'
+    - name: Checkout Picotool
+      uses: actions/checkout@v6
+      with:
+        repository: raspberrypi/picotool
+        path: picotool_src
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y --no-install-recommends cmake python3 build-essential gcc-arm-none-eabi libnewlib-arm-none-eabi libstdc++-arm-none-eabi-newlib
+
+    - name: Configure CMake for Picotool
+      run: |
+        cmake -S picotool_src -B picotool_build \
+        -D PICO_SDK_PATH=${{github.workspace}}/pico-sdk \
+        -D CMAKE_INSTALL_PREFIX=${{github.workspace}} \
+        -D PICOTOOL_NO_LIBUSB=1 \
+        -D PICOTOOL_FLAT_INSTALL=1
+    - name: Build Picotool
+      run: cmake --build picotool_build --parallel $(nproc)
+    - name: Install Picotool
+      run: cmake --install picotool_build
+
+    - name: Configure CMake for project
+      working-directory: pico_piko
+      run: |
+        cmake -S . -B build \
+        -D PICO_SDK_PATH=${{github.workspace}}/pico-sdk \
+        -D picotool_DIR=${{github.workspace}}/picotool
+    - name: Build project
+      working-directory: pico_piko
+      run: cmake --build build --parallel $(nproc)
+    - name: Information about project
+      working-directory: pico_piko
+      run: |
+        ls -al build/*/*.{elf,hex,uf2}
+        picotool/picotool info --all build/*.elf -t elf
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v7
+      with:
+        name: st25tb_kiwi_pico_piko
+        compression-level: 9
+        path: |
+          st25tb_kiwi_pico_piko/build/*.elf
+          st25tb_kiwi_pico_piko/build/*.hex
+          st25tb_kiwi_pico_piko/build/*.uf2
