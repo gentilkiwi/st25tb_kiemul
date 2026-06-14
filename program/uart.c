@@ -151,7 +151,7 @@ void tud_cdc_rx_cb(uint8_t itf)
             }
 
 
-            if (echo_len > count_of(echo) - 4)   // marge pour le pire cas (backspace = 3)
+            if (echo_len > count_of(echo) - 4) // just in case...
             {
                 tud_cdc_n_write(itf, echo, echo_len);
                 tud_cdc_n_write_flush(itf);

@@ -25,7 +25,7 @@ endif()
 # ====================================================================================
 set(PICO_BOARD pico CACHE STRING "Board type")
 
-set(PROJECT_NAME st25tb_kiwi_pico_piko)
+set(PROJECT_NAME st25tb_kameleon_pico_piko)
 set(PROG_VERSION "0.1")
 
 set(ST25TB_DIRECTORY ../program)
@@ -33,7 +33,7 @@ set(ST25TB_DIRECTORY ../program)
 # Pull in Raspberry Pi Pico SDK (must be before project)
 include(pico_sdk_import.cmake)
 
-project(st25tb_kiwi_pico_piko C CXX ASM)
+project(st25tb_kameleon_pico_piko C CXX ASM)
 
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()

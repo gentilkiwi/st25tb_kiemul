@@ -19,7 +19,7 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 # Set the project name
-set(CMAKE_PROJECT_NAME st25tb_kiwi_stm32_hydrabus)
+set(CMAKE_PROJECT_NAME st25tb_kameleon_stm32_hydrabus)
 
 # Enable compile command to ease indexing with e.g. clangd
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)

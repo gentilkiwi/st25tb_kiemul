@@ -107,7 +107,6 @@
                     </folderInfo>
                     <sourceEntries>
                         <entry excluding="stm32_hydrabus|pico_piko|lnk_msp430fr2673.cmd|lnk_msp430fr2676.cmd" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
-                        <entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="stm32_hydrabus/build/Release/CMakeFiles/CMakeScratch"/>
                     </sourceEntries>
                 </configuration>
             </storageModule>
@@ -218,7 +217,6 @@
                     </folderInfo>
                     <sourceEntries>
                         <entry excluding="stm32_hydrabus|pico_piko|lnk_msp430fr2673.cmd|lnk_msp430fr2476.cmd" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
-                        <entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="stm32_hydrabus/build/Release/CMakeFiles/CMakeScratch"/>
                     </sourceEntries>
                 </configuration>
             </storageModule>
@@ -329,7 +327,6 @@
                     </folderInfo>
                     <sourceEntries>
                         <entry excluding="stm32_hydrabus|pico_piko|lnk_msp430fr2476.cmd|lnk_msp430fr2676.cmd" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
-                        <entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="stm32_hydrabus/build/Release/CMakeFiles/CMakeScratch"/>
                     </sourceEntries>
                 </configuration>
             </storageModule>

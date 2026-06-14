@@ -58,7 +58,7 @@ jobs:
     - name: Upload artifacts
       uses: actions/upload-artifact@v7
       with:
-        name: st25tb_kiwi_pico_piko
+        name: st25tb_kameleon_pico_piko
         compression-level: 9
         path: |
           pico_piko/build/*.elf

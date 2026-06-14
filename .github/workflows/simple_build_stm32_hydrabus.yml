@@ -31,7 +31,7 @@ jobs:
     - name: Upload artifacts
       uses: actions/upload-artifact@v7
       with:
-        name: st25tb_kiwi_stm32_hydrabus
+        name: st25tb_kameleon_stm32_hydrabus
         compression-level: 9
         path: |
           stm32_hydrabus/build/*/*.elf
