@@ -7,7 +7,9 @@
 
 void main(void)
 {
+#if defined(ST25TB_HAVE_CLI)
     uint16_t calculatedCRC;
+#endif
 
     MODES_init();
 #if defined(ST25TB_HAVE_CLI)
