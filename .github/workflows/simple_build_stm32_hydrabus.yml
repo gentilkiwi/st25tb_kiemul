@@ -34,6 +34,6 @@ jobs:
         name: st25tb_kiwi_stm32_hydrabus
         compression-level: 9
         path: |
-          stm32_hydrabus/build/Release/*.elf
-          stm32_hydrabus/build/Release/*.bin
-          stm32_hydrabus/build/Release/*.hex
+          stm32_hydrabus/build/*/*.elf
+          stm32_hydrabus/build/*/*.bin
+          stm32_hydrabus/build/*/*.hex
