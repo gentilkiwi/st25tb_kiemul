@@ -61,6 +61,6 @@ jobs:
         name: st25tb_kiwi_pico_piko
         compression-level: 9
         path: |
-          st25tb_kiwi_pico_piko/build/*.elf
-          st25tb_kiwi_pico_piko/build/*.hex
-          st25tb_kiwi_pico_piko/build/*.uf2
+          pico_piko/build/*.elf
+          pico_piko/build/*.hex
+          pico_piko/build/*.uf2
