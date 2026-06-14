@@ -47,6 +47,21 @@ typedef struct _TRF7970A_MODE {
 #define TRF_IRQ_DISABLE()   HAL_NVIC_DisableIRQ(EXTI1_IRQn)
 #define TRF_IRQ_CLEAR()		__HAL_GPIO_EXTI_CLEAR_IT(TRF_IRQ_Pin)
 
+#elif defined(PICO_BOARD)
+
+#define TRF_ENABLE()        gpio_put(PIKO_GPIO_TRF_EN, true)
+#define TRF_DISABLE()       gpio_put(PIKO_GPIO_TRF_EN, false)
+
+#define TRF_CS_ENABLE()     TRF_CS_DELAY(); gpio_put(PIKO_GPIO_SPI_CS, false)
+#define TRF_CS_DISABLE()    gpio_put(PIKO_GPIO_SPI_CS, true); TRF_CS_DELAY()
+
+#define TRF_CS_DELAY()		do{ __no_operation(); } while(0)
+
+#define TRF_IRQ_READ()      gpio_get(PIKO_GPIO_TRF_IRQ)
+#define TRF_IRQ_ENABLE()    do{TRF_IRQ_CLEAR(); TRF_IRQ_READ() ? (IRQ_Global |= IRQ_SOURCE_TRF7970A) : (IRQ_Global &= ~IRQ_SOURCE_TRF7970A); gpio_set_irq_enabled(PIKO_GPIO_TRF_IRQ, GPIO_IRQ_EDGE_RISE, true);} while(0)
+#define TRF_IRQ_DISABLE()   gpio_set_irq_enabled(PIKO_GPIO_TRF_IRQ, GPIO_IRQ_EDGE_RISE, false)
+#define TRF_IRQ_CLEAR()     gpio_acknowledge_irq(PIKO_GPIO_TRF_IRQ, GPIO_IRQ_EDGE_RISE)
+
 #endif
 
 void TRF7970A_init();

@@ -74,6 +74,26 @@ const LED LEDS[NB_LEDS] = {
     /* 0 */ {LED_STATUS_BLUE_GPIO_Port, LED_STATUS_BLUE_Pin},
     /* 1 */ {LED_STATUS_GREEN_GPIO_Port, LED_STATUS_GREEN_Pin},
     /* 2 */ {LED_STATUS_RED_GPIO_Port, LED_STATUS_RED_Pin},
+#elif defined(PICO_BOARD)
+    // LEDS_MODES
+    /* 0 */ {PIKO_GPIO_LED_MOD_EMULATE},  // LED_MOD_EMULATE
+    /* 1 */ {PIKO_GPIO_LED_MOD_REWRITE},  // LED_MOD_REWRITE
+    /* 2 */ {PIKO_GPIO_LED_MOD_DETECT},   // LED_MOD_DETECT
+    /* 3 */ {PIKO_GPIO_LED_MOD_LEARN},    // LED_MOD_LEARN
+    /* 4 */ {PIKO_GPIO_LED_MOD_UNK},      // LED_MOD_UNK
+    // LEDS_SLOTS
+    /* 0 */ {PIKO_GPIO_LED_SLOT0},        // LED_SLOT0
+    /* 1 */ {PIKO_GPIO_LED_SLOT1},        // LED_SLOT1
+    /* 2 */ {PIKO_GPIO_LED_SLOT2},        // LED_SLOT2
+    /* 3 */ {PIKO_GPIO_LED_SLOT3},        // LED_SLOT3
+    /* 4 */ {PIKO_GPIO_LED_SLOT4},        // LED_SLOT4
+    /* 5 */ {PIKO_GPIO_LED_SLOT5},        // LED_SLOT5
+    /* 6 */ {PIKO_GPIO_LED_SLOT6},        // LED_SLOT6
+    /* 7 */ {PIKO_GPIO_LED_SLOT7},        // LED_SLOT7
+    // LEDS_STATUS
+    /* 0 */ {PIKO_GPIO_LED_STATUS_BLUE},  // LED_STATUS_BLUE
+    /* 1 */ {PIKO_GPIO_LED_STATUS_GREEN}, // LED_STATUS_GREEN
+    /* 2 */ {PIKO_GPIO_LED_STATUS_RED},   // LED_STATUS_RED
 #endif
 };
 
@@ -94,6 +114,8 @@ void LEDS_Bitmask(const LED *LEDS_ARRAY, const uint8_t nbLeds, uint8_t bitmask)
         }
 #elif defined(STM32F405xx)
         HAL_GPIO_WritePin(LEDS_ARRAY[i].portOutput, LEDS_ARRAY[i].bit, bitmask & 0b00000001);
+#elif defined(PICO_BOARD)
+        gpio_put(LEDS_ARRAY[i].gpio, bitmask & 0b00000001);
 #endif
     }
 }

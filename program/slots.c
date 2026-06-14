@@ -6,7 +6,14 @@
 #include "slots.h"
 
 #if defined(STM32F405xx)
-HAL_StatusTypeDef STM32_SPECIFIC_update_generic(const FLASH_STORED_DATA *newData);
+static HAL_StatusTypeDef STM32_SPECIFIC_update_generic(const FLASH_STORED_DATA *newData);
+#elif defined(PICO_BOARD)
+#define ROUND_UP(N, S)  ((((N) + (S) - 1) / (S)) * (S))
+static union {
+    FLASH_STORED_DATA data;
+    uint8_t raw[ROUND_UP(sizeof(FLASH_STORED_DATA), FLASH_SECTOR_SIZE)];
+} g_FlashWork;
+static void PICO_SPECIFIC_update_generic(void);
 #endif
 
 uint8_t SLOTS_ST25TB_Current[SLOTS_ST25TB_SECTORS_INTERNAL][4];
@@ -65,6 +72,10 @@ uint8_t SLOTS_Save(uint8_t index)
     	FLASH_STORED_DATA tmp = FlashStoredData;
     	memcpy(tmp.Slots[index], SLOTS_ST25TB_Current, sizeof(tmp.Slots[index]));
     	STM32_SPECIFIC_update_generic(&tmp);
+#elif defined(PICO_BOARD)
+        g_FlashWork.data = FlashStoredData;
+        memcpy(g_FlashWork.data.Slots[index], SLOTS_ST25TB_Current, sizeof(g_FlashWork.data.Slots[index]));
+        PICO_SPECIFIC_update_generic();
 #else
 #error Not supported
 #endif
@@ -112,6 +123,11 @@ void SLOTS_Trace_Save()
 		tmp.ST25TB_cbTrace = g_ui16_cbST25TB_TraceBuffer;
 		memcpy(tmp.ST25TB_Trace, g_ui8_ST25TB_TraceBuffer, g_ui16_cbST25TB_TraceBuffer);
 		STM32_SPECIFIC_update_generic(&tmp);
+#elif defined(PICO_BOARD)
+        g_FlashWork.data = FlashStoredData;
+        g_FlashWork.data.ST25TB_cbTrace = g_ui16_cbST25TB_TraceBuffer;
+	    memcpy(g_FlashWork.data.ST25TB_Trace, g_ui8_ST25TB_TraceBuffer, g_ui16_cbST25TB_TraceBuffer);
+        PICO_SPECIFIC_update_generic();
 #else
 #error Not supported
 #endif
@@ -129,10 +145,15 @@ void SLOTS_Trace_Clear()
         memset(FlashStoredData.ST25TB_Trace, 0, ST25TB_TRACE_BUFFER_SIZE);
         SYSCFG0 = FWPW | state;
 #elif defined(STM32F405xx)
-	FLASH_STORED_DATA tmp = FlashStoredData;
-	tmp.ST25TB_cbTrace = 0;
-	memset(tmp.ST25TB_Trace, 0, ST25TB_TRACE_BUFFER_SIZE);
-	STM32_SPECIFIC_update_generic(&tmp);
+        FLASH_STORED_DATA tmp = FlashStoredData;
+        tmp.ST25TB_cbTrace = 0;
+        memset(tmp.ST25TB_Trace, 0, ST25TB_TRACE_BUFFER_SIZE);
+        STM32_SPECIFIC_update_generic(&tmp);
+#elif defined(PICO_BOARD)
+        g_FlashWork.data = FlashStoredData;
+        g_FlashWork.data.ST25TB_cbTrace = 0;
+	    memset(g_FlashWork.data.ST25TB_Trace, 0, ST25TB_TRACE_BUFFER_SIZE);
+        PICO_SPECIFIC_update_generic();
 #else
 #error Not supported
 #endif
@@ -152,6 +173,11 @@ void SLOTS_Update_GenericConfig(uint8_t *configPtr, uint8_t value)
 	size_t offset = configPtr - (uint8_t *)&FlashStoredData;
 	((uint8_t *)&tmp)[offset] = value;
 	STM32_SPECIFIC_update_generic(&tmp);
+#elif defined(PICO_BOARD)
+    size_t offset = configPtr - (uint8_t *)&FlashStoredData;
+    g_FlashWork.data = FlashStoredData;
+    ((uint8_t *)&g_FlashWork.data)[offset] = value;
+    PICO_SPECIFIC_update_generic();
 #else
 #error Not supported
 #endif
@@ -159,7 +185,7 @@ void SLOTS_Update_GenericConfig(uint8_t *configPtr, uint8_t value)
 
 #if defined(__MSP430_HAS_FRAM__)
 #pragma PERSISTENT(FlashStoredData)
-#elif defined(STM32F405xx)
+#elif defined(STM32F405xx) || defined(PICO_BOARD)
 __attribute__((section(".flash_storage"), used))
 #else
 #error Not supported
@@ -271,7 +297,7 @@ const FLASH_EraseInitTypeDef FLASH_STORAGE_ERASE = {
 		.NbSectors = 1,
 		.VoltageRange = FLASH_VOLTAGE_RANGE_3,
 };
-HAL_StatusTypeDef STM32_SPECIFIC_update_generic(const FLASH_STORED_DATA *newData)
+static HAL_StatusTypeDef STM32_SPECIFIC_update_generic(const FLASH_STORED_DATA *newData)
 {
   HAL_StatusTypeDef ret;
   uint32_t SectorError;
@@ -297,5 +323,16 @@ HAL_StatusTypeDef STM32_SPECIFIC_update_generic(const FLASH_STORED_DATA *newData
 	  HAL_FLASH_Lock();
   }
   return ret;
+}
+#elif defined(PICO_BOARD)
+static void PICO_SPECIFIC_update_generic(void)
+{
+    uint32_t ints;
+    uint32_t offset = (uint32_t)host_safe_hw_ptr(&FlashStoredData) - XIP_BASE;
+
+    ints = save_and_disable_interrupts();
+    flash_range_erase(offset, sizeof(g_FlashWork.raw));
+    flash_range_program(offset, g_FlashWork.raw, sizeof(g_FlashWork.raw));
+    restore_interrupts(ints);
 }
 #endif

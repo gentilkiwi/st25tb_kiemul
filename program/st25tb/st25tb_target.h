@@ -53,4 +53,8 @@ uint8_t ST25TB_Target_AdjustIdxForSpecialAddr(uint8_t original);
 #define ST25TB_TARGET_DELAY_US_MEDIUM  8
 #define ST25TB_TARGET_DELAY_US_SMALL   2
 #endif
+#elif defined(PICO_BOARD)
+#define ST25TB_TARGET_DELAY_US_GLOBAL  86
+#define ST25TB_TARGET_DELAY_US_MEDIUM  13
+#define ST25TB_TARGET_DELAY_US_SMALL   7
 #endif

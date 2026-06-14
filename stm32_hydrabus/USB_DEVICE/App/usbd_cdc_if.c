@@ -282,7 +282,7 @@ static int8_t CDC_Receive_FS(uint8_t* Buf, uint32_t *Len)
 				}
 				else if ((c >= ' ') && !(c & 0x80))         // imprimable
 				{
-					if (cbRxBuffer < (sizeof(UART_RX_BUFFER) - 1))
+					if (cbRxBuffer < (count_of(UART_RX_BUFFER) - 1))
 					{
 						UART_RX_BUFFER[cbRxBuffer++] = c;
 						echo[echo_len++] = c;
@@ -297,6 +297,12 @@ static int8_t CDC_Receive_FS(uint8_t* Buf, uint32_t *Len)
 				{
 					cbRxBuffer = 0;
 					IRQ_Global |= IRQ_SOURCE_UART_RX;
+				}
+
+				if (echo_len > count_of(echo) - 4) // just in case...
+				{
+					CDC_Transmit_FS(echo, echo_len);
+					echo_len = 0;
 				}
 			}
 

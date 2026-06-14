@@ -13,6 +13,8 @@ typedef struct _LED {
 #elif defined(STM32F405xx)
 	GPIO_TypeDef* portOutput;
 	uint16_t bit;
+#elif defined(PICO_BOARD)
+    uint gpio;
 #else
 #error Not supported
 #endif
@@ -63,6 +65,12 @@ void LEDS_Animation();
 #define LED_INDEX_STATUS_GREEN          NB_LEDS_MODES + NB_LEDS_SLOTS + LED_OFFSET_STATUS_GREEN
 #define LED_INDEX_STATUS_RED            NB_LEDS_MODES + NB_LEDS_SLOTS + LED_OFFSET_STATUS_RED
 
+#if defined(PICO_BOARD)
+#define LED_ON(index)                   gpio_set_mask(1u << LEDS[index].gpio)
+#define LED_OFF(index)                  gpio_clr_mask(1u << LEDS[index].gpio)
+#define LED_TOGGLE(index)               gpio_xor_mask(1u << LEDS[index].gpio)
+#else
+
 #define LED_ON(index)                   LED_ON_internal(LEDS[index].portOutput, LEDS[index].bit)
 #define LED_OFF(index)                  LED_OFF_internal(LEDS[index].portOutput, LEDS[index].bit)
 #define LED_TOGGLE(index)               LED_TOGGLE_internal(LEDS[index].portOutput, LEDS[index].bit)
@@ -77,4 +85,5 @@ void LEDS_Animation();
 #define LED_TOGGLE_internal(p, b)       HAL_GPIO_TogglePin(p, b)
 #else
 #error Not supported
+#endif
 #endif

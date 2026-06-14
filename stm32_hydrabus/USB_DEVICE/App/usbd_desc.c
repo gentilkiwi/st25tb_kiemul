@@ -66,7 +66,7 @@
 #define USBD_LANGID_STRING     1036
 #define USBD_MANUFACTURER_STRING     "Gentil Kiwi"
 #define USBD_PID_FS     22336
-#define USBD_PRODUCT_STRING_FS     "st25tb_kiwi on HydraBus"
+#define USBD_PRODUCT_STRING_FS     "st25tb_kameleon on HydraBus"
 #define USBD_CONFIGURATION_STRING_FS     "CDC Config"
 #define USBD_INTERFACE_STRING_FS     "CDC Interface"
 

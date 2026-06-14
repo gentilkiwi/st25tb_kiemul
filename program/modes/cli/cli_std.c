@@ -67,7 +67,11 @@ void CLI_STD_memory()
             len = strtoul(strToken, NULL, 0);
         }
         printf("Memory @ 0x%" PRIxPTR " for %u byte(s)" UART_NEWLINE, addr, len);
+#if defined(__msp430)
         kprinthex(*(const void **) &addr, len);
+#else
+        kprinthex((const void *) addr, len);
+#endif
     }
     else printf("Need a memory address, like 0x8000" UART_NEWLINE);
 }

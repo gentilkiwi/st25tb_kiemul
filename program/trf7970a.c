@@ -50,6 +50,8 @@ void TRF7970A_SPI_Send_raw(const uint8_t *pcbData, uint8_t cbData)
     }
 #elif defined(STM32F405xx)
     HAL_SPI_Transmit(SPI_INTERNAL_HANDLE, (uint8_t *) pcbData, cbData, HAL_MAX_DELAY);
+#elif defined(PICO_BOARD)
+    spi_write_blocking(PIKO_SPI, pcbData, cbData);
 #else
 #error Not supported
 #endif
@@ -63,6 +65,8 @@ void TRF7970A_SPI_DirectCommand_internal(uint8_t CommandCode_Preparred) // be ca
     TRF_SPI_SEND(CommandCode_Preparred);
 #elif defined(STM32F405xx)
     HAL_SPI_Transmit(SPI_INTERNAL_HANDLE, &CommandCode_Preparred, 1, HAL_MAX_DELAY);
+#elif defined(PICO_BOARD)
+    spi_write_blocking(PIKO_SPI, &CommandCode_Preparred, 1);
 #else
 #error Not supported
 #endif
@@ -81,6 +85,10 @@ uint8_t TRF7970A_SPI_Read_SingleRegister_internal(uint8_t Register_Prepared)
     uint8_t buffer[2] = {Register_Prepared, };
     HAL_SPI_TransmitReceive(SPI_INTERNAL_HANDLE, buffer, buffer, sizeof(buffer), HAL_MAX_DELAY);
     res = buffer[1];
+#elif defined(PICO_BOARD)
+    uint8_t buffer[2] = {Register_Prepared, };
+    spi_write_read_blocking(PIKO_SPI, buffer, buffer, sizeof(buffer));
+    res = buffer[1];
 #else
 #error Not supported
 #endif
@@ -98,6 +106,9 @@ void TRF7970A_SPI_Write_SingleRegister_internal(uint8_t Register_Prepared, const
 #elif defined(STM32F405xx)
     uint8_t buffer[2] = {Register_Prepared, Value};
     HAL_SPI_Transmit(SPI_INTERNAL_HANDLE, buffer, sizeof(buffer), HAL_MAX_DELAY);
+#elif defined(PICO_BOARD)
+    uint8_t buffer[2] = {Register_Prepared, Value};
+    spi_write_blocking(PIKO_SPI, buffer, sizeof(buffer));
 #else
 #error Not supported
 #endif
@@ -117,6 +128,9 @@ void TRF7970A_SPI_Read_ContinuousRegister_internal(uint8_t Register_Prepared, ui
 #elif defined(STM32F405xx)
     HAL_SPI_Transmit(SPI_INTERNAL_HANDLE, &Register_Prepared, 1, HAL_MAX_DELAY);
     HAL_SPI_Receive(SPI_INTERNAL_HANDLE, pbData, cbData, HAL_MAX_DELAY);
+#elif defined(PICO_BOARD)
+    spi_write_blocking(PIKO_SPI, &Register_Prepared, 1);
+    spi_read_blocking(PIKO_SPI, 0x00, pbData, cbData);
 #else
 #error Not supported
 #endif
@@ -163,6 +177,18 @@ void TRF7970A_SPI_Write_Packet_TYPED_BB(const uint8_t *pcbData, uint8_t cbData, 
     };
     HAL_SPI_Transmit(SPI_INTERNAL_HANDLE, buffer, sizeof(buffer), HAL_MAX_DELAY);
     HAL_SPI_Transmit(SPI_INTERNAL_HANDLE, (uint8_t *) pcbData, cbData, HAL_MAX_DELAY);
+#elif defined(PICO_BOARD)
+    uint8_t buffer[5] = {
+        MK_DC(TRF79X0_RESET_FIFO_CMD),
+        type,
+        MK_WC(TRF79X0_TX_LENGTH_BYTE1_REG),
+		ui8LenHigherNibble, // in TRF79X0_TX_LENGTH_BYTE1_REG
+        ui8LenLowerNibble   // in TRF79X0_TX_LENGTH_BYTE2_REG
+    };
+    spi_write_blocking(PIKO_SPI, buffer, sizeof(buffer));
+    spi_write_blocking(PIKO_SPI, pcbData, cbData);
+#else
+#error Not supported
 #endif
     TRF_CS_DISABLE();
 }

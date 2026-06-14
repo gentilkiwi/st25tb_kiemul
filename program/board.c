@@ -11,9 +11,20 @@ char UART_RX_BUFFER[0x300];
 uint16_t cbRxBuffer = 0;
 #endif
 
+#if defined(PICO_BOARD)
+int64_t alarm_callback(__attribute__((unused)) alarm_id_t id, __attribute__((unused)) void *user_data)
+{
+    IRQ_Global |= IRQ_SOURCE_TIMER;
+    return 0;
+}
+#endif
+
 uint8_t IRQ_Wait_for(uint8_t IRQWanted, uint8_t *pTRF7970A_irqStatus, uint16_t timeout_ms)
 {
     uint8_t ret;
+#if defined(PICO_BOARD)
+    alarm_id_t id;
+#endif
 
     if(IRQWanted & IRQ_SOURCE_SW1)
     {
@@ -331,11 +342,20 @@ uint16_t CRC16_CCIT(const uint8_t *data, uint16_t cbData)
     return CRCINIRES;
 }
 #endif
-uint16_t lfsr = 0xcafe, bit;
-uint16_t RAND_Generate()
+
+static uint16_t lfsr = 0xcafe;
+uint16_t RAND_Generate(void)
 {
-    bit = ((lfsr >> 0) ^ (lfsr >> 2) ^ (lfsr >> 3) ^ (lfsr >> 5)) & 1;
-    return lfsr = (lfsr >> 1) | (bit << 15);
+    if (lfsr & 1)
+    {
+        lfsr = (lfsr >> 1) ^ 0xb400;
+    }
+    else
+    {
+        lfsr =  lfsr >> 1;
+    }
+    
+    return lfsr;
 }
 
 void TIMER_delay_Milliseconds_internal(uint16_t n_unit_ms) // max is UINT16_MAX ( 1985 ms * 33 = ~ UINT16_MAX )
@@ -516,11 +536,8 @@ __interrupt void EUSCI_A0_ISR (void)
     }
     else if(c == '\r')
     {
-        if(cbRxBuffer < count_of(UART_RX_BUFFER))
-        {
-            UART_RX_BUFFER[cbRxBuffer] = '\0';
-            IRQ_Global |= IRQ_SOURCE_UART_RX;
-        }
+        UART_RX_BUFFER[cbRxBuffer] = '\0';
+        IRQ_Global |= IRQ_SOURCE_UART_RX;
     }
     else if((c == 0x1b) || (c == 0x03)) // escape / ctrl+c
     {
@@ -612,5 +629,74 @@ void TIMER_delay_Microseconds_internal(uint16_t n_unit_us) {
 	} else {
 		Error_Handler();
 	}
+}
+#elif defined(PICO_BOARD)
+volatile uint8_t isUSBCDCWanted = 0;
+
+void __isr __time_critical_func(BOARD_IRQ_Callback)(uint gpio, uint32_t event_mask)
+{
+    if((gpio == PIKO_GPIO_TRF_IRQ) && (event_mask & GPIO_IRQ_EDGE_RISE))
+    {
+        IRQ_Global |= IRQ_SOURCE_TRF7970A;
+    }
+    else if((gpio == PIKO_GPIO_SW1_IRQ) && (event_mask & GPIO_IRQ_EDGE_FALL))
+    {
+        IRQ_Global |= IRQ_SOURCE_SW1;
+    }
+    else if((gpio == PIKO_GPIO_SW2_IRQ) && (event_mask & GPIO_IRQ_EDGE_FALL))
+    {
+        IRQ_Global |= IRQ_SOURCE_SW2;
+    }
+}
+
+int16_t ADC_TEMP_Get(void)
+{
+    uint16_t raw;
+    int32_t mv;
+
+    adc_set_temp_sensor_enabled(true);
+    adc_select_input(ADC_TEMPERATURE_CHANNEL_NUM);
+    raw = adc_read();
+    adc_set_temp_sensor_enabled(false);
+
+    mv = (raw * 3300) / 4096;
+    return (int16_t)(270 - ((mv - 706) * 1000) / 1721);
+}
+
+void BOARD_init()
+{
+    uint8_t i;
+
+    set_sys_clock_48mhz();
+    adc_init();
+
+    for(i = 0; i < count_of(LEDS); i++)
+    {
+        gpio_init(LEDS[i].gpio);
+        gpio_set_dir(LEDS[i].gpio, GPIO_OUT);
+    }
+
+    gpio_init(PIKO_GPIO_SW1_IRQ);
+    gpio_pull_up(PIKO_GPIO_SW1_IRQ);
+    gpio_init(PIKO_GPIO_SW2_IRQ);
+    gpio_pull_up(PIKO_GPIO_SW2_IRQ);
+    gpio_set_irq_enabled(PIKO_GPIO_SW1_IRQ, GPIO_IRQ_EDGE_FALL, true);
+    gpio_set_irq_enabled(PIKO_GPIO_SW2_IRQ, GPIO_IRQ_EDGE_FALL, true);
+
+    gpio_init(PIKO_GPIO_TRF_EN);
+    gpio_set_dir(PIKO_GPIO_TRF_EN, GPIO_OUT);
+    gpio_init(PIKO_GPIO_SPI_CS);
+    gpio_set_dir(PIKO_GPIO_SPI_CS, GPIO_OUT);
+    gpio_init(PIKO_GPIO_TRF_IRQ);
+    TRF_IRQ_DISABLE();
+    
+    spi_init(PIKO_SPI, 4000000);
+    spi_set_format(PIKO_SPI, 8, SPI_CPOL_0, SPI_CPHA_1, SPI_MSB_FIRST);
+    gpio_set_function(PIKO_GPIO_SPI_CLK, GPIO_FUNC_SPI);
+    gpio_set_function(PIKO_GPIO_SPI_MOSI, GPIO_FUNC_SPI);
+    gpio_set_function(PIKO_GPIO_SPI_MISO, GPIO_FUNC_SPI);
+
+    gpio_set_irq_callback(BOARD_IRQ_Callback);
+    irq_set_enabled(IO_IRQ_BANK0, true);
 }
 #endif

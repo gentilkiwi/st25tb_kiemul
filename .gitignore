@@ -1,6 +1,8 @@
 .ccsproject
 .launches/
 .settings/
+.vscode/
+build/
 .clangd
 launch.json
 program/private_*

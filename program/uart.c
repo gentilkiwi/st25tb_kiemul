@@ -101,7 +101,75 @@ void UART_Redirect_std()
 
     //UART_Enabled = FlashStoredData.bUARTEnabled;
 }
+#elif defined(PICO_BOARD)
+#include <tusb.h>
+void tud_cdc_line_state_cb(__unused uint8_t itf, bool dtr, __unused bool rts)
+{
+    UART_Enabled = dtr;
+}
 
+void tud_cdc_rx_cb(uint8_t itf)
+{
+    uint8_t echo[192];
+    uint16_t echo_len = 0;
+    uint8_t c;
+
+    if (isUSBCDCWanted)
+    {
+        while (tud_cdc_n_available(itf))
+        {
+            if (tud_cdc_n_read(itf, &c, 1) != 1)
+                break;
+
+            if (c == 0x7f) // backspace
+            {
+                if (cbRxBuffer)
+                {
+                    echo[echo_len++] = '\b';
+                    echo[echo_len++] = ' ';
+                    echo[echo_len++] = '\b';
+                    cbRxBuffer--;
+                }
+            }
+            else if ((c >= ' ') && !(c & 0x80))
+            {
+                if (cbRxBuffer < (count_of(UART_RX_BUFFER) - 1))
+                {
+                    UART_RX_BUFFER[cbRxBuffer++] = c;
+                    echo[echo_len++] = c;
+                }
+            }
+            else if (c == '\r')
+            {
+                UART_RX_BUFFER[cbRxBuffer] = '\0';
+                IRQ_Global |= IRQ_SOURCE_UART_RX;
+            }
+            else if (c == 0x1b || c == 0x03) // escape / ctrl+c
+            {
+                cbRxBuffer = 0;
+                IRQ_Global |= IRQ_SOURCE_UART_RX;
+            }
+
+
+            if (echo_len > count_of(echo) - 4)   // marge pour le pire cas (backspace = 3)
+            {
+                tud_cdc_n_write(itf, echo, echo_len);
+                tud_cdc_n_write_flush(itf);
+                echo_len = 0;
+            }
+        }
+
+        if (echo_len)
+        {
+            tud_cdc_n_write(itf, echo, echo_len);
+            tud_cdc_n_write_flush(itf);
+        }
+    }
+    else
+    {
+        tud_cdc_n_read_flush(itf);
+    }
+}
 #endif
 
 void kprinthex(const void *lpData, const uint16_t cbData)

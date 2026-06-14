@@ -4,9 +4,26 @@
     Licence : https://creativecommons.org/licenses/by/4.0/
 */
 #pragma once
+#if !defined PICO_BOARD
+#if defined(PICO_RP2040) || defined(PICO_RP2350)
+#define PICO_BOARD
+#endif
+#endif
+
 #if defined(STM32F405xx)
 #include "usbd_cdc_if.h"
 #include "main.h"
+#elif defined(PICO_BOARD)
+#include <hardware/spi.h>
+#include <hardware/gpio.h>
+#include <hardware/flash.h>
+#include <hardware/sync.h>
+#include <hardware/clocks.h>
+#include <hardware/watchdog.h>
+#include <hardware/adc.h>
+//#include <pico/multicore.h>
+#include <pico/rand.h>
+#include <pico/stdlib.h>
 #else
 #include <msp430.h>
 #endif
@@ -31,10 +48,23 @@
 #define ST25TB_HAVE_FULL_LEDS
 #elif defined(STM32F405xx)
 #define ST25TB_BOARD_NAME       "ST25TB kameleon"
-#define ST25TB_MCU_NAME         "HydraBus (STM32F405)"
+#define ST25TB_MCU_NAME         "STM32F405 (HydraBus)"
 
 #define ST25TB_HAVE_CLI
 #define ST25TB_HAVE_FULL_LEDS
+#elif defined(PICO_BOARD)
+#define ST25TB_BOARD_NAME       "ST25TB kameleon"
+#if defined(PICO_RP2040)
+    #define ST25TB_MCU_NAME "RP204x (" PICO_BOARD ") - ARM Cortex-M0+"
+#elif defined (PICO_RP2350)
+    #if defined(PICO_RISCV) && PICO_RISCV
+        #define ST25TB_MCU_NAME "RP235x (" PICO_BOARD ") - RISC-V Hazard3"
+    #elif defined(PICO_ARM) && PICO_ARM
+        #define ST25TB_MCU_NAME "RP235x (" PICO_BOARD ") - ARM Cortex-M33"
+    #endif
+#endif
+#define ST25TB_HAVE_FULL_LEDS
+#define ST25TB_HAVE_CLI
 #else
 #error unknown board?
 #endif
@@ -179,10 +209,9 @@ extern USBD_HandleTypeDef hUsbDeviceFS;
 #define SW1_IS_PRESSED()                (HAL_GPIO_ReadPin(K1_GPIO_Port, K1_Pin) == GPIO_PIN_SET)
 #define SW2_IS_PRESSED()                (HAL_GPIO_ReadPin(UBTN_GPIO_Port, UBTN_Pin) == GPIO_PIN_SET)
 
+#if defined(ST25TB_HAVE_CLI)
 extern char UART_RX_BUFFER[0x300];
 extern uint16_t cbRxBuffer;
-
-#if defined(ST25TB_HAVE_CLI)
 #define UART_ENABLE_RX_IRQ()            isUSBCDCWanted = 1
 #define UART_DISABLE_RX_IRQ()           isUSBCDCWanted = 0
 #endif
@@ -191,4 +220,57 @@ extern uint16_t cbRxBuffer;
 #define __no_operation()                __asm__("nop")
 #define __emptyloop()
 //extern int __flash_binary_start, __flash_binary_end;
+#elif defined(PICO_BOARD)
+extern volatile uint8_t isUSBCDCWanted;
+
+#define PIKO_SPI                    spi0
+
+#define PIKO_GPIO_TX                0
+#define PIKO_GPIO_RX                1
+#define PIKO_GPIO_LED_STATUS_BLUE   2
+#define PIKO_GPIO_SW2_IRQ           3
+#define PIKO_GPIO_SPI_MISO          4
+#define PIKO_GPIO_TRF_EN            5
+#define PIKO_GPIO_SPI_CLK           6
+#define PIKO_GPIO_SPI_MOSI          7
+#define PIKO_GPIO_LED_STATUS_GREEN  8
+#define PIKO_GPIO_LED_STATUS_RED    9
+#define PIKO_GPIO_SPI_CS            10
+#define PIKO_GPIO_TRF_IRQ           11
+#define PIKO_GPIO_SW1_IRQ           12
+#define PIKO_GPIO_LED_MOD_EMULATE   13
+#define PIKO_GPIO_LED_MOD_REWRITE   14
+#define PIKO_GPIO_LED_MOD_DETECT    15
+#define PIKO_GPIO_LED_MOD_LEARN     16
+#define PIKO_GPIO_LED_MOD_UNK       17
+#define PIKO_GPIO_LED_SLOT0         18
+#define PIKO_GPIO_LED_SLOT1         19
+#define PIKO_GPIO_LED_SLOT2         20
+#define PIKO_GPIO_LED_SLOT3         21
+#define PIKO_GPIO_LED_SLOT4         22
+#define PIKO_GPIO_LED_SLOT5         23
+#define PIKO_GPIO_LED_SLOT6         24
+#define PIKO_GPIO_LED_SLOT7         25
+
+void BOARD_init();
+#define RAND_Generate() get_rand_32()
+#define MCU_RESET()     watchdog_reboot(0, 0, 0)
+
+#define TIMER_stop()                        cancel_alarm(id)
+#define TIMER_delay_Milliseconds(n_ms)      sleep_ms(n_ms)
+#define TIMER_start_Milliseconds(n_ms)      do{IRQ_Global &= ~IRQ_SOURCE_TIMER; id = add_alarm_in_ms(n_ms, alarm_callback, NULL, false);} while(0)
+#define TIMER_delay_Microseconds(n_us)      sleep_us(n_us)
+
+#define SW1_IS_PRESSED()               (!gpio_get(PIKO_GPIO_SW1_IRQ))
+#define SW2_IS_PRESSED()               (!gpio_get(PIKO_GPIO_SW2_IRQ))
+
+#if defined(ST25TB_HAVE_CLI)
+extern char UART_RX_BUFFER[0x300];
+extern uint16_t cbRxBuffer;
+#define UART_ENABLE_RX_IRQ()            isUSBCDCWanted = 1
+#define UART_DISABLE_RX_IRQ()           isUSBCDCWanted = 0
+#endif
+
+#define __no_operation()            __nop()
+#define __emptyloop()               tight_loop_contents()
 #endif

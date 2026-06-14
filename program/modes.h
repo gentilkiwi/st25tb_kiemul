@@ -24,3 +24,6 @@ typedef struct _KAKI_MODE {
 #include "modes/tear.h"
 #include "modes/field.h"
 #include "modes/cli.h"
+
+void MODES_init();
+void MODES_main_loop();
