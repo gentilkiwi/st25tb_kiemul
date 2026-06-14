@@ -54,7 +54,7 @@ jobs:
       working-directory: pico_piko
       run: |
         ls -al build/*.{elf,hex,uf2}
-        picotool/picotool info --all build/*.elf -t elf
+        ${{github.workspace}}/picotool/picotool info --all build/*.elf -t elf
     - name: Upload artifacts
       uses: actions/upload-artifact@v7
       with:
