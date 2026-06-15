@@ -51,6 +51,7 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     ${ST25TB_DIRECTORY}/modes.c
     ${ST25TB_DIRECTORY}/leds.c
     ${ST25TB_DIRECTORY}/slots.c
+    ${ST25TB_DIRECTORY}/references.c
     ${ST25TB_DIRECTORY}/trf7970a.c
     ${ST25TB_DIRECTORY}/uart.c
     

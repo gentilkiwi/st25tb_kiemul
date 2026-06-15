@@ -7,10 +7,9 @@
 
 #if defined(REFERENCES_DATA_READY)
 
-const uint8_t REFERENCES_ST25TB[][REFERENCES_ST25TB_SECTORS_INTERNAL][4] = {
+const uint8_t REFERENCES_ST25TB[][REFERENCES_ST25TB_SECTORS_INTERNAL][4] __attribute__((aligned(4))) = {
     #include "references.data"
 };
-
 const uint8_t REFERENCES_ST25TB_COUNT = count_of(REFERENCES_ST25TB);
 
 uint8_t REFERENCES_FindByUID(uint8_t pui8Data[8]) // ret == REFERENCES_FIND_INVALID_INDEX -> not found

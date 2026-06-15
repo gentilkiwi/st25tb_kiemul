@@ -18,7 +18,7 @@ This firmware is using `STM32CubeIDE`, compatible with `STM32CubeMX` - project s
 
 You can flash the firmware from the IDE itself, but you can also use `STM32CubeProgrammer`, the GUI or the CLI.
 
-By example for DFU mode in CLI: `STM32_Programmer_CLI --connect port=usb1 --download build\Release\st25tb_kiwi_stm32_hydrabus.hex --verify --go`
+By example for DFU mode in CLI: `STM32_Programmer_CLI --connect port=usb1 --download build\Release\st25tb_kameleon_stm32_hydrabus.hex --verify --go`
 
 ```
       -------------------------------------------------------------------
@@ -41,11 +41,11 @@ Revision ID : --
 Device CPU  : Cortex-M4
 
 
-Opening and parsing file: st25tb_kiwi_stm32_hydrabus.hex
+Opening and parsing file: st25tb_kameleon_stm32_hydrabus.hex
 
 
 Memory Programming ...
-  File          : st25tb_kiwi_stm32_hydrabus.hex
+  File          : st25tb_kameleon_stm32_hydrabus.hex
   Size          : 81.78 KB
   Address       : 0x08000000
 
