@@ -95,18 +95,23 @@ pico_set_linker_script(${PROJECT_NAME} ${CMAKE_SOURCE_DIR}/memmap_rp2040_2M_rese
 
 # Add the standard library to the build
 target_link_libraries(${PROJECT_NAME}
-        pico_stdlib
-        pico_unique_id
-        hardware_spi
-        hardware_flash
-        hardware_adc
-        pico_rand
+    pico_stdlib
+    pico_unique_id
+    hardware_spi
+    hardware_flash
+    hardware_adc
+    pico_rand
 )
 
 # Add the standard include files to the build
 target_include_directories(${PROJECT_NAME} PRIVATE
-        ${CMAKE_CURRENT_LIST_DIR}
-        ${ST25TB_DIRECTORY}
+    ${CMAKE_CURRENT_LIST_DIR}
+    ${ST25TB_DIRECTORY}
+)
+
+target_compile_definitions(${PROJECT_NAME} PRIVATE
+    USBD_MANUFACTURER="gentilkiwi"
+    USBD_PRODUCT="st25tb_k... on Pico"
 )
 
 # pico_add_extra_outputs(${PROJECT_NAME})
