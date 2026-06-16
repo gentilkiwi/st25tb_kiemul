@@ -39,6 +39,7 @@ project(st25tb_kameleon_pico_piko C CXX ASM)
 pico_sdk_init()
 
 add_compile_options(-Werror -Wall -Wextra -Wnull-dereference)
+add_link_options(-Wl,--print-memory-usage)
 
 # Add executable. Default name is the project name, version 0.1
 
@@ -107,14 +108,6 @@ target_include_directories(${PROJECT_NAME} PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}
         ${ST25TB_DIRECTORY}
 )
-
-if(PROJECT_NAME)
-    target_compile_definitions(${PROJECT_NAME} PRIVATE PROG_NAME="${PROJECT_NAME}")
-endif()
-
-if(PROG_VERSION)
-    target_compile_definitions(${PROJECT_NAME} PRIVATE PROG_VERSION="${PROG_VERSION}")
-endif()
 
 # pico_add_extra_outputs(${PROJECT_NAME})
 pico_add_hex_output(${PROJECT_NAME})
