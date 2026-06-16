@@ -110,8 +110,9 @@ target_include_directories(${PROJECT_NAME} PRIVATE
 )
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE
+    USBD_DESC_STR_MAX=32
     USBD_MANUFACTURER="gentilkiwi"
-    USBD_PRODUCT="st25tb_k... on Pico"
+    USBD_PRODUCT="st25tb_kameleon on Pico"
 )
 
 # pico_add_extra_outputs(${PROJECT_NAME})
