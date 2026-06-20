@@ -159,7 +159,25 @@ uint8_t TRF7970A_SPI_waitIrq();
 #define TRF79X0_NFC_ACTIVE_MODE             0x08
 #define TRF79X0_NFC_NORMAL_MODE             0x00
 #define TRF79X0_NFC_CARD_EMULATION_MODE     0x04 // Fixed from 6.15.3.1.2
+
+#define TRF79X0_NFC_BR_106K_OR_CE_14443A        0x00 // 00 : NFC N/A      | CE ISO 14443 A
+#define TRF79X0_NFC_BR_106K_OR_CE_14443B        0x01 // 01 : NFC 106 kbps | CE ISO 14443 B
+#define TRF79X0_NFC_BR_212K                     0x02 // 10 : NFC 212 kbps | CE N/A
+#define TRF79X0_NFC_BR_424K                     0x03 // 11 : NFC 424 kbps | CE N/A
+
+// ISO/IEC 14443 A
 #define TRF79X0_ISO_CONTROL_14443A_106K     0x08
+#define TRF79X0_ISO_CONTROL_14443A_212K     0x09
+#define TRF79X0_ISO_CONTROL_14443A_424K     0x0a
+#define TRF79X0_ISO_CONTROL_14443A_848K     0x0b
+// ISO/IEC 14443 B
+#define TRF79X0_ISO_CONTROL_14443B_106K     0x0c
+#define TRF79X0_ISO_CONTROL_14443B_212K     0x0d
+#define TRF79X0_ISO_CONTROL_14443B_424K     0x0e
+#define TRF79X0_ISO_CONTROL_14443B_848K     0x0f
+// FeliCa
+#define TRF79X0_ISO_CONTROL_FELICA_212K     0x1a
+#define TRF79X0_ISO_CONTROL_FELICA_424K     0x1b
 
 //*****************************************************************************
 //
@@ -261,7 +279,7 @@ uint8_t TRF7970A_SPI_waitIrq();
 
 // 6.15.3.3.10
 #define TRF79X0_NFC_TARGET_PROTOCOL_14B_COMMAND         (TRF79X0_NFC_TARGET_PROTOCOL_RF_COLLISION_LEVEL | TRF79X0_NFC_TARGET_PROTOCOL_ISO14443B | TRF79X0_NFC_TARGET_PROTOCOL_106KBPS) // TRF79X0_NFC_TARGET_PROTOCOL_RF_WAKE_UP -- to deal with RF field ON/OFF
-#define TRF79X0_NFC_TARGET_PROTOCOL_14A_COMMAND         (TRF79X0_NFC_TARGET_PROTOCOL_ISO14443A) // TRF79X0_NFC_TARGET_PROTOCOL_RF_COLLISION_LEVEL | TRF79X0_NFC_TARGET_PROTOCOL_RF_WAKE_UP
+#define TRF79X0_NFC_TARGET_PROTOCOL_14A_COMMAND         (TRF79X0_NFC_TARGET_PROTOCOL_RF_COLLISION_LEVEL | TRF79X0_NFC_TARGET_PROTOCOL_ISO14443A) // TRF79X0_NFC_TARGET_PROTOCOL_RF_WAKE_UP
 
 #define TRF79X0_IRQ_STATUS_COL_ERR                      0x01 // The external RF field was present so the collision avoidance could not be carried out.
 #define TRF79X0_IRQ_STATUS_COL                          0x02 // The system has finished collision avoidance and the minimum wait time is elapsed.
@@ -271,3 +289,21 @@ uint8_t TRF7970A_SPI_waitIrq();
 #define TRF79X0_IRQ_STATUS_FIFO                         0x20 // Signals FIFO high or low as set in the Adjustable FIFO IRQ Levels (0x14) register
 #define TRF79X0_IRQ_STATUS_SRX                          0x40 // Signals that RX SOF was received and RX is in progress. The flag is set at the start of RX but the interrupt request (IRQ = 1) is sent when RX is finished.
 #define TRF79X0_IRQ_STATUS_TX                           0x80 // Signals that TX is in progress. The flag is set at the start of TX but the interrupt request (IRQ = 1) is sent when TX is finished.
+
+// 6.15.3.2.9 - RX Special Setting Register (0x0a)
+#define TRF79X0_RX_SPECIAL_SETTINGS_C212                0x80 // Band-pass 110 kHz to 570 kHz - Appropriate for 212-kHz subcarrier system (FeliCa)
+#define TRF79X0_RX_SPECIAL_SETTINGS_C424                0x40 // Band-pass 200 kHz to 900 kHz - Appropriate for 424-kHz subcarrier used in ISO/IEC 15693
+#define TRF79X0_RX_SPECIAL_SETTINGS_M848                0x20 // Band-pass 450 kHz to 1.5 MHz - Appropriate for Manchester-coded 848-kHz subcarrier used in ISO/IEC 14443 A and B
+#define TRF79X0_RX_SPECIAL_SETTINGS_HBT                 0x10 // Band-pass 100 kHz to 1.5 MHz - Gain reduced for 18 dB - Appropriate for highest bit rate (848 kbps) used in high-bit-rate ISO/IEC 14443
+#define TRF79X0_RX_SPECIAL_SETTINGS_GAIN_RED_0DB        0x00
+#define TRF79X0_RX_SPECIAL_SETTINGS_GAIN_RED_5DB        0x04
+#define TRF79X0_RX_SPECIAL_SETTINGS_GAIN_RED_10DB       0x08
+#define TRF79X0_RX_SPECIAL_SETTINGS_GAIN_RED_15DB       0x0c
+
+// 6.15.3.3.4 - Special Functions Register (0x10)
+#define TRF79X0_SPECIAL_FUNC_1_PAR43_OFF                0x20
+#define TRF79X0_SPECIAL_FUNC_1_NEXT_SLOT_37US           0x10
+#define TRF79X0_SPECIAL_FUNC_1_SP_DIR_MODE              0x08
+#define TRF79X0_SPECIAL_FUNC_1_4_BIT_RX                 0x04
+#define TRF79X0_SPECIAL_FUNC_1_14_ANTICOLL_OFF          0x02
+#define TRF79X0_SPECIAL_FUNC_1_COL_6_PULSES             0x01
