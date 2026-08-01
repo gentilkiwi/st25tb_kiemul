@@ -34,5 +34,7 @@ uint8_t ST25TB_Initiator_CMD_Write_Block(const uint8_t ui8BlockIdx, const uint8_
 uint8_t ST25TB_Initiator_CMD_CONFIRMED_Write_Block(const uint8_t ui8BlockIdx, const uint8_t pui8Data[4]);
 uint8_t ST25TB_Initiator_CMD_Write_Block_noflush_notimer(const uint8_t ui8BlockIdx, const uint8_t pui8Data[4]);
 
+uint8_t ST25TB_Initiator_CMD_Authenticate(const uint8_t pui8Data[6], uint8_t pui8Sig[3]);
+
 uint8_t ST25TB_Initiator_Initiate_Select_Read_Block(const uint8_t ui8BlockIdx, uint8_t pui8Data[4]);
 uint8_t ST25TB_Initiator_Initiate_Select_Write_Block(const uint8_t ui8BlockIdx, uint8_t pui8Data[4]);

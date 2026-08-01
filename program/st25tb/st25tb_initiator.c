@@ -395,6 +395,29 @@ uint8_t ST25TB_Initiator_CMD_Write_Block_noflush_notimer(const uint8_t ui8BlockI
     return ret;
 }
 
+uint8_t ST25TB_Initiator_CMD_Authenticate(const uint8_t pui8Data[6], uint8_t pui8Sig[3])
+{
+    uint8_t ret, ST25TB_Initiator_CMD_Authenticate_data[1 + 6];
+
+    ST25TB_Initiator_CMD_Authenticate_data[0] = ST25TB_CMD_AUTHENTICATE;
+    memcpy(ST25TB_Initiator_CMD_Authenticate_data + 1, pui8Data, sizeof(ST25TB_Initiator_CMD_Authenticate_data) - 1);
+
+    ret = ST25TB_Initiator_SendRecv(ST25TB_Initiator_CMD_Authenticate_data, sizeof(ST25TB_Initiator_CMD_Authenticate_data), ST25TB_INITIATOR_TIMEOUT_GENERIC); // Timeout ?
+    if (ret == IRQ_SOURCE_NONE)
+    {
+        if(g_ui8_cbST25TB_Buffer == 3)
+        {
+            memcpy(pui8Sig, g_ui8_ST25TB_Buffer, 3);
+        }
+        else
+        {
+            ret = IRQ_SOURCE_ST25TB_PROTOCOL_ERR;
+        }
+    }
+
+    return ret;
+}
+
 uint8_t ST25TB_Initiator_Initiate_Select_Read_Block(const uint8_t ui8BlockIdx, uint8_t pui8Data[4])
 {
     uint8_t BP_IrqSource, ui8ChipId;
